@@ -3,7 +3,7 @@
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
-public SharedPlugin:__pl_forlix_fc =
+public void SharedPlugin __pl_forlix_fc =
 {
 	name = "forlix_floodcheck",
 	file = "forlix_floodcheck.smx",
@@ -12,9 +12,9 @@ public SharedPlugin:__pl_forlix_fc =
 #else
 	required = 0,
 #endif
-};
+}
 
-public __pl_forlix_fc_SetNTVOptional()
+public void __pl_forlix_fc_SetNTVOptional()
 {
   MarkNativeAsOptional("IsClientFlooding");
 }

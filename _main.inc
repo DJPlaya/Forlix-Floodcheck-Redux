@@ -6,9 +6,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#pragma semicolon 1
-
-#define PLUGIN_VERSION          "1.73"
+#define PLUGIN_VERSION          "1.73-B"
 #define PLUGIN_VERSION_CVAR     "forlix_floodcheck_version"
 
 #define VOICE_LOOPBACK_MSG      "Voice loopback not allowed!\nYou have been muted."
@@ -37,32 +35,32 @@
 // can be max MAX_MSG_LEN-2
 // the game now truncates to 63 but only clientside
 
-public Plugin:myinfo =
+public Plugin myinfo = 
 {
-  name = "Forlix FloodCheck",
-  author = "Forlix (Dominik Friedrichs)",
-  description = "General purpose flood and exploit protection",
-  version = PLUGIN_VERSION,
-  url = "http://forlix.org/"
-};
+	name = "Forlix FloodCheck", 
+	author = "Forlix(Dominik Friedrichs) (Playa Edit)", 
+	description = "General purpose Flood and Exploit Protection", 
+	version = PLUGIN_VERSION, 
+	url = "FunForBattle"
+}
 
-new Float:chat_interval = 0.0;
-new chat_num = 0;
+float chat_interval = 0.0;
+int chat_num = 0;
 
-new Float:hard_interval = 0.0;
-new hard_num = 0;
-new hard_ban_time = 0;
+float hard_interval = 0.0;
+int hard_num = 0;
+int hard_ban_time = 0;
 
-new Float:name_interval = 0.0;
-new name_num = 0;
-new name_ban_time = 0;
+float name_interval = 0.0;
+int name_num = 0;
+int name_ban_time = 0;
 
-new Float:connect_interval = 0.0;
-new connect_num = 0;
-new connect_ban_time = 0;
+float connect_interval = 0.0;
+int connect_num = 0;
+int connect_ban_time = 0;
 
-new exclude_chat_triggers = 0;
-new mute_voice_loopback = 0;
+int exclude_chat_triggers = 0;
+int mute_voice_loopback = 0;
 
 #include "ff_convars.sp"
 #include "ff_markcheats.sp"
