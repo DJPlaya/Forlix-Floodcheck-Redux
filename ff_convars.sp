@@ -72,6 +72,8 @@ SetupConVars()
 	
 	h_mute_voice_loopback = CreateConVar("forlix_floodcheck_mute_voice_loopback", MUTE_VOICE_LOOPBACK, "Mute players enabling voice_loopback (1) or allow its use (0)", 0, true, 0.0, true, 1.0);
 	
+	AutoExecConfig(true, "Forlix_Floodcheck");
+	
 	HookConVarChange(h_chat_interval, MyConVarChanged);
 	HookConVarChange(h_chat_num, MyConVarChanged);
 	
