@@ -5,7 +5,7 @@
 
 #include "_main.inc"
 
-static bool late_load = false;
+static bool late_load;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, err_max)
 {
@@ -15,7 +15,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, err_max)
 	return APLRes_Success;
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegPluginLibrary("forlix_floodcheck");
 	
@@ -52,7 +52,7 @@ public OnPluginStart()
 		Query_VoiceLoopback_All();
 		
 	late_load = false;
-	return;
+	//return;
 }
 
 public OnPluginEnd()

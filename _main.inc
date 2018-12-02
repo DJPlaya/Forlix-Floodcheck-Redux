@@ -44,23 +44,19 @@ public Plugin myinfo =
 	url = "FunForBattle"
 }
 
-float chat_interval = 0.0;
-int chat_num = 0;
+float chat_interval;
+int chat_num;
 
-float hard_interval = 0.0;
-int hard_num = 0;
-int hard_ban_time = 0;
+float hard_interval;
+int hard_num, hard_ban_time;
 
-float name_interval = 0.0;
-int name_num = 0;
-int name_ban_time = 0;
+float name_interval;
+int name_num, name_ban_time;
 
-float connect_interval = 0.0;
-int connect_num = 0;
-int connect_ban_time = 0;
+float connect_interval;
+int connect_num, connect_ban_time;
 
-int exclude_chat_triggers = 0;
-int mute_voice_loopback = 0;
+int exclude_chat_triggers, mute_voice_loopback;
 
 #include "ff_convars.sp"
 #include "ff_markcheats.sp"

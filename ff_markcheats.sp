@@ -52,15 +52,15 @@ MarkCheats()
 	for(int i = 0; i < sizeof(addcheat_cmds); i++)
 		SetCheatFlag(addcheat_cmds[i]);
 		
-	return;
+	//return;
 }
 
-bool SetCheatFlag(const char[] cvar)
+static bool SetCheatFlag(const char[] cvar)
 {
 	int flags = GetCommandFlags(cvar);
 	
 	if(flags == INVALID_FCVAR_FLAGS)
-		return(false);
+		return false;
 		
 	SetCommandFlags(cvar, flags | FCVAR_CHEAT);
 	return true;

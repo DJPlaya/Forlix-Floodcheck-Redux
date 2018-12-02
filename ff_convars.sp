@@ -119,5 +119,5 @@ public MyConVarChanged(Handle convar, const char[] oldValue, const char[] newVal
 	mute_voice_loopback = GetConVarInt(h_mute_voice_loopback);
 	
 	Query_VoiceLoopback_All();
-	return;
+	//return;
 }

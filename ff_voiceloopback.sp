@@ -4,13 +4,13 @@
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
 
-Query_VoiceLoopback(client)
+void Query_VoiceLoopback(client)
 {
 	if(!mute_voice_loopback)
 		return;
 		
 	QueryClientConVar(client, "voice_loopback", Query_VoiceLoopback_Callback);
-	return;
+	//return;
 }
 
 public Query_VoiceLoopback_Callback(QueryCookie cookie, client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)

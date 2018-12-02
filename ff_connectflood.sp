@@ -10,12 +10,12 @@
 
 static Handle h_ipfilters;
 
-FloodCheckConnect_PluginStart()
+void FloodCheckConnect_PluginStart()
 {
 	h_ipfilters = CreateArray(MAX_IPPORT_LEN + 32);
 	CreateTimer(REMOVEFILTER_INTERVAL, Timer_RemoveExpiredIPFilters, INVALID_HANDLE, TIMER_REPEAT);
 	
-	return;
+	//return;
 }
 
 FloodCheckConnect_PluginEnd()
@@ -23,10 +23,10 @@ FloodCheckConnect_PluginEnd()
 	// remove all ip filters
 	int filternum = GetArraySize(h_ipfilters);
 	
-	for(int i = 0; i < filternum; i++)
+	for(int iCount; iCount < filternum; iCount++)
 	{
 		char str_ip_exptime[MAX_IPPORT_LEN + 32];
-		GetArrayString(h_ipfilters, i, str_ip_exptime, sizeof(str_ip_exptime));
+		GetArrayString(h_ipfilters, iCount, str_ip_exptime, sizeof(str_ip_exptime));
 		
 		int ip_len = FindCharInString(str_ip_exptime, '_');
 		
@@ -62,10 +62,10 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 	float time_c = GetTickedTime();
 	int ti = -1;
 	
-	for(int i = 0; i < CONNECT_TRACK; i++)
-		if(!strcmp(connect_ip[i], str_ip))
+	for(int iCount; iCount < CONNECT_TRACK; iCount++)
+		if(!strcmp(connect_ip[iCount], str_ip))
 		{
-			ti = i;
+			ti = iCount;
 			break;
 		}
 		
@@ -153,29 +153,29 @@ bool AddIPFilterTrackingObject(const char[] str_ip, duration)
 public Action Timer_RemoveExpiredIPFilters(Handle timer)
 {
 	int filternum = GetArraySize(h_ipfilters);
-	int time_c = GetTime();
+	int iTime = GetTime();
 	
-	for(int i = 0; i < filternum; i++)
+	for(int iCount; iCount < filternum; iCount++)
 	{
 		char str_ip_exptime[MAX_IPPORT_LEN + 32];
-		GetArrayString(h_ipfilters, i, str_ip_exptime, sizeof(str_ip_exptime));
+		GetArrayString(h_ipfilters, iCount, str_ip_exptime, sizeof(str_ip_exptime));
 		
-		int ip_len = FindCharInString(str_ip_exptime, '_');
+		int iIPLenght = FindCharInString(str_ip_exptime, '_');
 		
-		if(ip_len < IP_LEN_MIN)
+		if(iIPLenght < IP_LEN_MIN)
 		{
-			RemoveFromArray(h_ipfilters, i--);
+			RemoveFromArray(h_ipfilters, iCount--);
 			filternum--;
 			continue;
 		}
 		
-		if(time_c < StringToInt(str_ip_exptime[ip_len + 1]))
+		if(iTime < StringToInt(str_ip_exptime[iIPLenght + 1]))
 			continue;
 			
-		str_ip_exptime[ip_len] = '\0';
+		str_ip_exptime[iIPLenght] = '\0';
 		ServerCommand("removeip %s", str_ip_exptime);
 		
-		RemoveFromArray(h_ipfilters, i--);
+		RemoveFromArray(h_ipfilters, iCount--);
 		filternum--;
 	}
 	

@@ -36,16 +36,16 @@ bool FriendlyTime(time_s, char[] str_ftime, str_ftime_len, bool compact = true)
 	
 	if(time_s < 60)
 		Format(str_ftime, str_ftime_len, "%u%s", secs, secs_pf);
-	
+		
 	else if(time_s < 3600)
 		Format(str_ftime, str_ftime_len, "%u%s %u%s", mins, mins_pf, secs, secs_pf);
-	
+		
 	else if(time_s < 86400)
 		Format(str_ftime, str_ftime_len, "%u%s %u%s", hrs, hrs_pf, mins, mins_pf);
-	
+		
 	else
 		Format(str_ftime, str_ftime_len, "%u%s %u%s", days, days_pf, hrs, hrs_pf);
-	
+		
 	return true;
 }
 

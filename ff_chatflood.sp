@@ -3,20 +3,20 @@
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
-static float game_chat_deadtime = 0.0;
-static float game_radio_deadtime = 0.0;
+static float game_chat_deadtime;
+static float game_radio_deadtime;
 
 static float p_time_lastchatmsg[MAXPLAYERS + 1];
 static int p_cmdcnt_chat[MAXPLAYERS + 1];
 static bool p_floodstate[MAXPLAYERS + 1];
 
-FloodCheckChat_Connect(client)
+void FloodCheckChat_Connect(client)
 {
 	p_time_lastchatmsg[client] = 0.0;
 	p_cmdcnt_chat[client] = 0;
 	p_floodstate[client] = false;
 	
-	return;
+	//return;
 }
 
 public Action FloodCheckChat(client, args)
@@ -78,7 +78,7 @@ bool FloodDeadtime(client, float deadtime)
 	return false;
 }
 
-bool FloodCheck(client)
+static bool FloodCheck(client)
 {
 	if(!client || !chat_interval)
 		return false;
@@ -116,7 +116,7 @@ bool FloodCheck(client)
 	return false;
 }
 
-bool FilterChat(client)
+static bool FilterChat(client)
 {
 	char text[MAX_MSG_LEN + 2];
 	text[0] = '\0';

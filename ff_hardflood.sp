@@ -7,13 +7,13 @@ static float p_time_lasthardfld[MAXPLAYERS+1];
 static p_cmdcnt_hard[MAXPLAYERS+1];
 static bool p_hard_banned[MAXPLAYERS+1];
 
-FloodCheckHard_Connect(client)
+void FloodCheckHard_Connect(client)
 {
 	p_time_lasthardfld[client] = 0.0;
 	p_cmdcnt_hard[client] = 0;
 	p_hard_banned[client] = false;
 	
-	return;
+	//return;
 }
 
 bool FloodCheckHard(client)
