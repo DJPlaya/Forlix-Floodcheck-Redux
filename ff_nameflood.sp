@@ -2,9 +2,10 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 static float p_time_lastnamefld[MAXPLAYERS + 1];
-static p_cmdcnt_name[MAXPLAYERS + 1];
+static int p_cmdcnt_name[MAXPLAYERS + 1];
 static bool p_name_banned[MAXPLAYERS + 1];
 
 void FloodCheckName_Connect(iClient)
@@ -12,8 +13,6 @@ void FloodCheckName_Connect(iClient)
 	p_time_lastnamefld[iClient] = GetTickedTime();
 	p_cmdcnt_name[iClient] = 0;
 	p_name_banned[iClient] = false;
-	
-	//return;
 }
 
 bool FloodCheckName(iClient)
@@ -33,7 +32,7 @@ bool FloodCheckName(iClient)
 		return false;
 	}
 	
-	// reaching this, we should ban the iClient
+	// reaching this, we should ban the Client
 	char str_networkid[MAX_STEAMID_LEN];
 	
 	if(GetClientAuthId(iClient, AuthId_Steam2, str_networkid, sizeof(str_networkid))) // we've got the networkid // GetClientAuthString(iClient, str_networkid, sizeof(str_networkid))

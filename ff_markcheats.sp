@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 static char addcheat_cmds[][] = 
 {
@@ -45,23 +46,21 @@ static char addcheat_cmds[][] =
 	"sv_soundemitter_flush", 
 	"sv_soundscape_printdebuginfo", 
 	"wc_update_entity"
-};
-
-MarkCheats()
-{
-	for(int i = 0; i < sizeof(addcheat_cmds); i++)
-		SetCheatFlag(addcheat_cmds[i]);
-		
-	//return;
 }
 
-static bool SetCheatFlag(const char[] cvar)
+void MarkCheats()
 {
-	int flags = GetCommandFlags(cvar);
+	for(int iCount = 0; iCount < sizeof(addcheat_cmds); iCount++)
+		SetCheatFlag(addcheat_cmds[iCount]);
+}
+
+static bool SetCheatFlag(const char[] cCvar)
+{
+	int iFlags = GetCommandFlags(cCvar);
 	
-	if(flags == INVALID_FCVAR_FLAGS)
+	if(iFlags == INVALID_FCVAR_FLAGS)
 		return false;
 		
-	SetCommandFlags(cvar, flags | FCVAR_CHEAT);
+	SetCommandFlags(cCvar, iFlags | FCVAR_CHEAT);
 	return true;
 }

@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 #define REMOVEFILTER_INTERVAL   2.5
 #define IP_LEN_MIN              7
@@ -14,8 +15,6 @@ void FloodCheckConnect_PluginStart()
 {
 	h_ipfilters = CreateArray(MAX_IPPORT_LEN + 32);
 	CreateTimer(REMOVEFILTER_INTERVAL, Timer_RemoveExpiredIPFilters, INVALID_HANDLE, TIMER_REPEAT);
-	
-	//return;
 }
 
 FloodCheckConnect_PluginEnd()
@@ -43,8 +42,8 @@ FloodCheckConnect_PluginEnd()
 
 bool FloodCheckConnect(const char[] str_ipport, userid)
 {
-	static int connect_ip_index = 0;
-	static char connect_ip[CONNECT_TRACK][MAX_IPPORT_LEN];
+	int connect_ip_index = 0;
+	char connect_ip[CONNECT_TRACK][MAX_IPPORT_LEN];
 	static float connect_lasttime[CONNECT_TRACK];
 	static int connect_cnt[CONNECT_TRACK];
 	
@@ -122,7 +121,7 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 	return true;
 }
 
-bool AddIPFilterTrackingObject(const char[] str_ip, duration)
+static bool AddIPFilterTrackingObject(const char[] str_ip, duration)
 {
 	int filternum = GetArraySize(h_ipfilters);
 	

@@ -2,121 +2,118 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
-static float game_chat_deadtime;
-static float game_radio_deadtime;
-
+static float game_chat_deadtime, game_radio_deadtime;
 static float p_time_lastchatmsg[MAXPLAYERS + 1];
 static int p_cmdcnt_chat[MAXPLAYERS + 1];
 static bool p_floodstate[MAXPLAYERS + 1];
 
-void FloodCheckChat_Connect(client)
+void FloodCheckChat_Connect(iClient)
 {
-	p_time_lastchatmsg[client] = 0.0;
-	p_cmdcnt_chat[client] = 0;
-	p_floodstate[client] = false;
-	
-	//return;
+	p_time_lastchatmsg[iClient] = 0.0;
+	p_cmdcnt_chat[iClient] = 0;
+	p_floodstate[iClient] = false;
 }
 
-public Action FloodCheckChat(client, args)
+public Action FloodCheckChat(iClient, args)
 {
-	if(!client)
+	if(!iClient)
 		return Plugin_Continue;
 		
-	if (!IsClientInGame(client))
+	if(!IsClientInGame(iClient))
 		return Plugin_Handled;
 		
-	int excl = 0;
+	int iExcl = 0;
 		
 	if(IsChatTrigger())
-		excl = exclude_chat_triggers;
+		iExcl = exclude_chat_triggers;
 		
 	else
-		FloodCheckHard(client);
+		FloodCheckHard(iClient);
 		
-	if(FloodDeadtime(client, game_chat_deadtime))
+	if(FloodDeadtime(iClient, game_chat_deadtime))
 		return Plugin_Handled;
 		
-	if(!excl && FloodCheck(client))
+	if(!iExcl && FloodCheck(iClient))
 		return Plugin_Handled;
 		
-	if(FilterChat(client))
+	if(FilterChat(iClient))
 		return Plugin_Handled;
 		
 	return Plugin_Continue;
 }
 
-public Action FloodCheckRadio(client, args)
+public Action FloodCheckRadio(iClient, args)
 {
-	if(!client)
+	if(!iClient)
 		return Plugin_Continue;
 		
-	if(!IsClientInGame(client) || GetClientListeningFlags(client) & VOICE_MUTED)
+	if(!IsClientInGame(iClient) || GetClientListeningFlags(iClient) & VOICE_MUTED)
 		return Plugin_Handled;
 		
-	if(FloodDeadtime(client, game_radio_deadtime))
+	if(FloodDeadtime(iClient, game_radio_deadtime))
 		return Plugin_Handled;
 		
-	if(IsPlayerAlive(client) && FloodCheck(client))
+	if(IsPlayerAlive(iClient) && FloodCheck(iClient))
 		return Plugin_Handled;
 		
 	return Plugin_Continue;
 }
 
-bool FloodDeadtime(client, float deadtime)
+bool FloodDeadtime(iClient, float deadtime)
 {
 	static float time_nc[MAXPLAYERS + 1];
 	float time_c = GetTickedTime();
 	
 	// ignore and swallow calls within this deadtime
 	// this is built into the engine as well
-	if (time_c < time_nc[client])
+	if (time_c < time_nc[iClient])
 		return true;
 		
-	time_nc[client] = time_c + deadtime;
+	time_nc[iClient] = time_c + deadtime;
 	return false;
 }
 
-static bool FloodCheck(client)
+static bool FloodCheck(iClient)
 {
-	if(!client || !chat_interval)
+	if(!iClient || !chat_interval)
 		return false;
 		
 	float time_c = GetTickedTime();
 	
-	if(time_c < p_time_lastchatmsg[client] + chat_interval) // client has undershot the chat msg interval
+	if(time_c < p_time_lastchatmsg[iClient] + chat_interval) // iClient has undershot the chat msg interval
 	{
-		p_time_lastchatmsg[client] = time_c;
+		p_time_lastchatmsg[iClient] = time_c;
 		
-		if(p_cmdcnt_chat[client] < chat_num) // add a flood token
-			p_cmdcnt_chat[client]++;
+		if(p_cmdcnt_chat[iClient] < chat_num) // add a flood token
+			p_cmdcnt_chat[iClient]++;
 			
 		// maximum tokens accumulated
-		// client is now flooding
-		if(p_cmdcnt_chat[client] >= chat_num)
+		// Client is now flooding
+		if(p_cmdcnt_chat[iClient] >= chat_num)
 		{
-			p_floodstate[client] = true;
+			p_floodstate[iClient] = true;
 			return true;
 		}
 	}
 	
-	else // clients chat msg frequency is below the maximum
+	else // Clients chat msg frequency is below the maximum
 	{
-		p_time_lastchatmsg[client] = time_c;
+		p_time_lastchatmsg[iClient] = time_c;
 		
-		if(p_cmdcnt_chat[client] > 0) // remove a flood token
-			p_cmdcnt_chat[client]--;
+		if(p_cmdcnt_chat[iClient] > 0) // remove a flood token
+			p_cmdcnt_chat[iClient]--;
 			
-		if(p_cmdcnt_chat[client] < 0) // level out at zero
-			p_cmdcnt_chat[client] = 0;
+		if(p_cmdcnt_chat[iClient] < 0) // level out at zero
+			p_cmdcnt_chat[iClient] = 0;
 	}
 	
-	p_floodstate[client] = false;
+	p_floodstate[iClient] = false;
 	return false;
 }
 
-static bool FilterChat(client)
+static bool FilterChat(iClient)
 {
 	char text[MAX_MSG_LEN + 2];
 	text[0] = '\0';
@@ -126,7 +123,7 @@ static bool FilterChat(client)
 	
 	if(MakeStringPrintable(text, sizeof(text), "")) // something had to be modified - not conform
 	{
-		PrintToChat(client, MALFORMED_MESSAGE_MSG);
+		PrintToChat(iClient, MALFORMED_MESSAGE_MSG);
 		return true;
 	}
 	

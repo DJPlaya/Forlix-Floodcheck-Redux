@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 
 void Query_VoiceLoopback(client)
@@ -10,7 +11,6 @@ void Query_VoiceLoopback(client)
 		return;
 		
 	QueryClientConVar(client, "voice_loopback", Query_VoiceLoopback_Callback);
-	//return;
 }
 
 public Query_VoiceLoopback_Callback(QueryCookie cookie, client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)

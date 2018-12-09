@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 #include "_main.inc"
 
@@ -52,13 +53,11 @@ public void OnPluginStart()
 		Query_VoiceLoopback_All();
 		
 	late_load = false;
-	//return;
 }
 
-public OnPluginEnd()
+public void OnPluginEnd()
 {
 	FloodCheckConnect_PluginEnd();
-	return;
 }
 
 public bool OnClientConnect(client, char[] rejectmsg, maxlen)
@@ -78,7 +77,7 @@ public OnClientSettingsChanged(client)
 		return;
 		
 	Query_VoiceLoopback(client);
-		
+	
 	if(!IsClientNameAllowed(client))
 		KickClient(client, MALFORMED_NAME_MSG);
 		

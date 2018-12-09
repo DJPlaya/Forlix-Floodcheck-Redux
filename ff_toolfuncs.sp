@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 bool FriendlyTime(time_s, char[] str_ftime, str_ftime_len, bool compact = true)
 {

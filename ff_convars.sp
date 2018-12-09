@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 // convar defaults
 #define FLOOD_CHAT_INTERVAL     "4"
@@ -22,55 +23,41 @@
 #define EXCLUDE_CHAT_TRIGGERS   "1"
 #define MUTE_VOICE_LOOPBACK     "1"
 
-static Handle h_chat_interval = INVALID_HANDLE;
-static Handle h_chat_num = INVALID_HANDLE;
-
-static Handle h_hard_interval = INVALID_HANDLE;
-static Handle h_hard_num = INVALID_HANDLE;
-static Handle h_hard_ban_time = INVALID_HANDLE;
-
-static Handle h_name_interval = INVALID_HANDLE;
-static Handle h_name_num = INVALID_HANDLE;
-static Handle h_name_ban_time = INVALID_HANDLE;
-
-static Handle h_connect_interval = INVALID_HANDLE;
-static Handle h_connect_num = INVALID_HANDLE;
-static Handle h_connect_ban_time = INVALID_HANDLE;
-
-static Handle h_exclude_chat_triggers = INVALID_HANDLE;
-static Handle h_mute_voice_loopback = INVALID_HANDLE;
+static Handle h_chat_interval, h_chat_num;
+static Handle h_hard_interval, h_hard_num, h_hard_ban_time;
+static Handle h_name_interval, h_name_num, h_name_ban_time;
+static Handle h_connect_interval, h_connect_num, h_connect_ban_time;
+static Handle h_exclude_chat_triggers, h_mute_voice_loopback;
 
 SetupConVars()
 {
-	Handle version_cvar = CreateConVar(PLUGIN_VERSION_CVAR, PLUGIN_VERSION, "Forlix FloodCheck plugin version", FCVAR_SPONLY | FCVAR_NOTIFY | FCVAR_PRINTABLEONLY);
+	CreateConVar("forlix_floodcheck_version", PLUGIN_VERSION, "Forlix FloodCheck plugin version", FCVAR_NOTIFY | FCVAR_DONTRECORD);
 	
-	SetConVarString(version_cvar, PLUGIN_VERSION, false, false);
+	h_chat_interval = CreateConVar("forlix_floodcheck_chat_interval", FLOOD_CHAT_INTERVAL, "Minimum average interval in seconds between a players chat- and radio-messages (0 to disable)", _, true, 0.0, true, 20.0);
 	
-	h_chat_interval = CreateConVar("forlix_floodcheck_chat_interval", FLOOD_CHAT_INTERVAL, "Minimum average interval in seconds between a players chat- and radio-messages (0 to disable)", 0, true, 0.0, true, 20.0);
+	h_chat_num = CreateConVar("forlix_floodcheck_chat_num", FLOOD_CHAT_NUM, "Player is considered spamming after undershooting <forlix_floodcheck_chat_interval> this many times", _, true, 1.0, true, 75.0);
 	
-	h_chat_num = CreateConVar("forlix_floodcheck_chat_num", FLOOD_CHAT_NUM, "Player is considered spamming after undershooting <forlix_floodcheck_chat_interval> this many times", 0, true, 1.0, true, 75.0);
+	h_hard_interval = CreateConVar("forlix_floodcheck_hard_interval", FLOOD_HARD_INTERVAL, "Time in seconds in which <forlix_floodcheck_hard_num> commands are allowed (0 to disable)", _, true, 0.0, true, 20.0);
 	
-	h_hard_interval = CreateConVar("forlix_floodcheck_hard_interval", FLOOD_HARD_INTERVAL, "Time in seconds in which <forlix_floodcheck_hard_num> commands are allowed (0 to disable)", 0, true, 0.0, true, 20.0);
+	h_hard_num = CreateConVar("forlix_floodcheck_hard_num", FLOOD_HARD_NUM, "Maximum number of client commands allowed in <forlix_floodcheck_hard_interval> seconds", _, true, 10.0, true, 750.0);
 	
-	h_hard_num = CreateConVar("forlix_floodcheck_hard_num", FLOOD_HARD_NUM, "Maximum number of client commands allowed in <forlix_floodcheck_hard_interval> seconds", 0, true, 10.0, true, 750.0);
+	h_hard_ban_time = CreateConVar("forlix_floodcheck_hard_ban_time", FLOOD_HARD_BAN_TIME, "Number of minutes a client is banned for when hard-flooding", _, true, 1.0, true, 20160.0);
 	
-	h_hard_ban_time = CreateConVar("forlix_floodcheck_hard_ban_time", FLOOD_HARD_BAN_TIME, "Number of minutes a client is banned for when hard-flooding", 0, true, 1.0, true, 20160.0);
+	h_name_interval = CreateConVar("forlix_floodcheck_name_interval", FLOOD_NAME_INTERVAL, "Time in seconds in which <forlix_floodcheck_name_num> name changes are allowed (0 to disable)", _, true, 0.0, true, 600.0);
 	
-	h_name_interval = CreateConVar("forlix_floodcheck_name_interval", FLOOD_NAME_INTERVAL, "Time in seconds in which <forlix_floodcheck_name_num> name changes are allowed (0 to disable)", 0, true, 0.0, true, 600.0);
+	h_name_num = CreateConVar("forlix_floodcheck_name_num", FLOOD_NAME_NUM, "Maximum number of name changes allowed in <forlix_floodcheck_name_interval> seconds", _, true, 1.0, true, 20.0);
 	
-	h_name_num = CreateConVar("forlix_floodcheck_name_num", FLOOD_NAME_NUM, "Maximum number of name changes allowed in <forlix_floodcheck_name_interval> seconds", 0, true, 1.0, true, 20.0);
+	h_name_ban_time = CreateConVar("forlix_floodcheck_name_ban_time", FLOOD_NAME_BAN_TIME, "Number of minutes a client is banned for when name-flooding", _, true, 1.0, true, 20160.0);
 	
-	h_name_ban_time = CreateConVar("forlix_floodcheck_name_ban_time", FLOOD_NAME_BAN_TIME, "Number of minutes a client is banned for when name-flooding", 0, true, 1.0, true, 20160.0);
+	h_connect_interval = CreateConVar("forlix_floodcheck_connect_interval", FLOOD_CONNECT_INTERVAL, "Time in seconds in which <forlix_floodcheck_connect_num> connects are allowed (0 to disable)", _, true, 0.0, true, 60.0);
 	
-	h_connect_interval = CreateConVar("forlix_floodcheck_connect_interval", FLOOD_CONNECT_INTERVAL, "Time in seconds in which <forlix_floodcheck_connect_num> connects are allowed (0 to disable)", 0, true, 0.0, true, 60.0);
+	h_connect_num = CreateConVar("forlix_floodcheck_connect_num", FLOOD_CONNECT_NUM, "Maximum number of connects allowed in <forlix_floodcheck_connect_interval> seconds", _, true, 1.0, true, 20.0);
 	
-	h_connect_num = CreateConVar("forlix_floodcheck_connect_num", FLOOD_CONNECT_NUM, "Maximum number of connects allowed in <forlix_floodcheck_connect_interval> seconds", 0, true, 1.0, true, 20.0);
+	h_connect_ban_time = CreateConVar("forlix_floodcheck_connect_ban_time", FLOOD_CONNECT_BAN_TIME, "Number of seconds a client is IP-banned for when connect-flooding", _, true, 5.0, true, 600.0);
 	
-	h_connect_ban_time = CreateConVar("forlix_floodcheck_connect_ban_time", FLOOD_CONNECT_BAN_TIME, "Number of seconds a client is IP-banned for when connect-flooding", 0, true, 5.0, true, 600.0);
+	h_exclude_chat_triggers = CreateConVar("forlix_floodcheck_exclude_chat_triggers", EXCLUDE_CHAT_TRIGGERS, "Excludes (1) or includes (0) SourceMod chat triggers in the chat flood detection", _, true, 0.0, true, 1.0);
 	
-	h_exclude_chat_triggers = CreateConVar("forlix_floodcheck_exclude_chat_triggers", EXCLUDE_CHAT_TRIGGERS, "Excludes (1) or includes (0) SourceMod chat triggers in the chat flood detection", 0, true, 0.0, true, 1.0);
-	
-	h_mute_voice_loopback = CreateConVar("forlix_floodcheck_mute_voice_loopback", MUTE_VOICE_LOOPBACK, "Mute players enabling voice_loopback (1) or allow its use (0)", 0, true, 0.0, true, 1.0);
+	h_mute_voice_loopback = CreateConVar("forlix_floodcheck_mute_voice_loopback", MUTE_VOICE_LOOPBACK, "Mute players enabling voice_loopback (1) or allow its use (0)", _, true, 0.0, true, 1.0);
 	
 	AutoExecConfig(true, "Forlix_Floodcheck");
 	
@@ -119,5 +106,4 @@ public MyConVarChanged(Handle convar, const char[] oldValue, const char[] newVal
 	mute_voice_loopback = GetConVarInt(h_mute_voice_loopback);
 	
 	Query_VoiceLoopback_All();
-	//return;
 }

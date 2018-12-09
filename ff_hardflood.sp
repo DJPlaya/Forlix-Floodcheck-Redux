@@ -2,6 +2,7 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 static float p_time_lasthardfld[MAXPLAYERS+1];
 static p_cmdcnt_hard[MAXPLAYERS+1];
@@ -12,8 +13,6 @@ void FloodCheckHard_Connect(client)
 	p_time_lasthardfld[client] = 0.0;
 	p_cmdcnt_hard[client] = 0;
 	p_hard_banned[client] = false;
-	
-	//return;
 }
 
 bool FloodCheckHard(client)

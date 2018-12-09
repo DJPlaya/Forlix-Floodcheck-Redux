@@ -2,12 +2,12 @@
 // http://forlix.org/, df@forlix.org
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
+// No Copyright (i guess) 2018 FunForBattle
 
 #include <sourcemod>
 #include <sdktools>
 
 #define PLUGIN_VERSION          "1.73-B"
-#define PLUGIN_VERSION_CVAR     "forlix_floodcheck_version"
 
 #define VOICE_LOOPBACK_MSG      "Voice loopback not allowed!\nYou have been muted."
 
