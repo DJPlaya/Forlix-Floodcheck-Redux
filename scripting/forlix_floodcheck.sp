@@ -4,7 +4,7 @@
 // Copyright (c) 2008-2013 Dominik Friedrichs
 // No Copyright (i guess) 2018 FunForBattle
 
-#include "_main.inc"
+#include "FFC/_main.inc"
 
 static bool late_load;
 

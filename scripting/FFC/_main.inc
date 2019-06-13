@@ -58,12 +58,12 @@ int connect_num, connect_ban_time;
 
 int exclude_chat_triggers, mute_voice_loopback;
 
-#include "ff_convars.sp"
-#include "ff_markcheats.sp"
-#include "ff_events.sp"
-#include "ff_chatflood.sp"
-#include "ff_hardflood.sp"
-#include "ff_nameflood.sp"
-#include "ff_connectflood.sp"
-#include "ff_voiceloopback.sp"
-#include "ff_toolfuncs.sp"
+#include "FFC/ff_convars.sp"
+#include "FFC/ff_markcheats.sp"
+#include "FFC/ff_events.sp"
+#include "FFC/ff_chatflood.sp"
+#include "FFC/ff_hardflood.sp"
+#include "FFC/ff_nameflood.sp"
+#include "FFC/ff_connectflood.sp"
+#include "FFC/ff_voiceloopback.sp"
+#include "FFC/ff_toolfuncs.sp"
