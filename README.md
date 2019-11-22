@@ -11,7 +11,7 @@ Official supported Games:
 - Counter-Strike: Source
 - Team Fortress 2
 - Day of Defeat: Source
-#### Most Elements of KACR will work on every Source 2007+ Engine Game
+#### Most Elements of FFCR will work on every Source 2007+ Engine Game
 #
 This is a Fork of the latest Version of FFC, i will Update it to the latest Standards and improve Game Support.
 </br>In general this Plugin is a great Protection against various Types of Flooding.
