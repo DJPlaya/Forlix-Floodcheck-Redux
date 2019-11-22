@@ -14,8 +14,8 @@ Official supported Games:
 #### Most Elements of KACR will work on every Source 2007+ Engine Game
 #
 This is a Fork of the latest Version of FFC, i will Update it to the latest Standards and improve Game Support.
-In general this Plugin is a great Protection against various Types of Flooding.
-Types of Protection:
+</br>In general this Plugin is a great Protection against various Types of Flooding.
+</br>Types of Protection:
 - Chat
 - Commands
 - Namechange
