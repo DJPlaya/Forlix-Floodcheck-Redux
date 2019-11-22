@@ -1,7 +1,7 @@
 # Forlix Floodcheck Redux
 
 Requires:
-- SourceMod 1.8 or Higher
+- SourceMod 1.8 or Higher (forlix_floodcheck is for 1.10, forlix_floodcheck_legacy for 1.8/1.9)
 
 Optional:
 - Sourcebans++
