@@ -6,6 +6,9 @@ Requires:
 Optional:
 - Sourcebans++
 - Sourcebans 2.X (V1 is unsupported)
+- BaseComm
+- SourceComms
+- SourceComms++
 
 Official supported Games:
 - Counter-Strike: Source
