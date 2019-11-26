@@ -6,16 +6,23 @@
 /*
 * Performs and SB++-, SB- or Server-Ban
 * 
-* @param iClient		Client UID.
-* @param iTime			Bantime, 0 = Forever.
-* @param cReason		The Ban Reason.
-* @param ...			Variable Number of Format Parameters.
-* @return				True if the Ban was succesfull, False if not
+* @param iClient	Client UID.
+* @param iTime		Bantime in Minutes, 0 = Forever.
+* @param cReason	The Ban Reason.
+* @param ...		Variable Number of Format Parameters.
+* @return			True if the Ban was succesfull, False if not
 */
-bool FFCR_Ban(const iClient, iTime, const char[] cReason, any ...)
+bool FFCR_Ban(const iClient, iTime, const char[] cReason, any...)
 {
 	char cBuffer[256];
 	VFormat(cBuffer, sizeof(cBuffer), cReason, 5);
+	
+	if (iTime < 4) // Do not send Bans under 5min to SB // TODO: Add Cvar
+		if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cBuffer, cBuffer, "FFCR"))
+	{
+		LogError("[Error] Failed to Server Ban Client '%L'", iClient);
+		return false;
+	}
 	
 	if (g_bSourceBansPP)
 	{
@@ -30,12 +37,12 @@ bool FFCR_Ban(const iClient, iTime, const char[] cReason, any ...)
 	}
 	
 	else
-		if(!BanClient(iClient, iTime, BANFLAG_AUTHID, cBuffer, cBuffer, "FFCR"))
-		{
-			LogError("[Error] Failed to Server Ban Client '%L'", iClient);
-			return false;
-		}
-		
+		if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cBuffer, cBuffer, "FFCR"))
+	{
+		LogError("[Error] Failed to Server Ban Client '%L'", iClient);
+		return false;
+	}
+	
 	return false;
 }
 
@@ -43,7 +50,7 @@ bool FriendlyTime(time_s, char[] str_ftime, str_ftime_len, bool compact = true)
 {
 	char days_pf[16], hrs_pf[16], mins_pf[16], secs_pf[16];
 	
-	if(compact)
+	if (compact)
 	{
 		days_pf = "d";
 		hrs_pf = "h";
@@ -59,7 +66,7 @@ bool FriendlyTime(time_s, char[] str_ftime, str_ftime_len, bool compact = true)
 		secs_pf = " seconds";
 	}
 	
-	if(time_s < 0)
+	if (time_s < 0)
 	{
 		str_ftime[0] = '\0';
 		return false;
@@ -70,13 +77,13 @@ bool FriendlyTime(time_s, char[] str_ftime, str_ftime_len, bool compact = true)
 	int mins = (time_s / 60) % 60;
 	int secs = time_s % 60;
 	
-	if(time_s < 60)
+	if (time_s < 60)
 		Format(str_ftime, str_ftime_len, "%u%s", secs, secs_pf);
 		
-	else if(time_s < 3600)
+	else if (time_s < 3600)
 		Format(str_ftime, str_ftime_len, "%u%s %u%s", mins, mins_pf, secs, secs_pf);
 		
-	else if(time_s < 86400)
+	else if (time_s < 86400)
 		Format(str_ftime, str_ftime_len, "%u%s %u%s", hrs, hrs_pf, mins, mins_pf);
 		
 	else
@@ -93,10 +100,10 @@ bool IsClientNameAllowed(client)
 	GetClientName(client, name, sizeof(name));
 	int len = strlen(name);
 	
-	if(name[0] == '&' && len >= 2 && name[len - 1] == '&') // those &names& cause clientside glitches
+	if (name[0] == '&' && len >= 2 && name[len - 1] == '&') // those &names& cause clientside glitches
 		return false;
 		
-	if(FindCharInString(name, '%') >= 0) // also disallow any % just in case
+	if (FindCharInString(name, '%') >= 0) // also disallow any % just in case
 		return false;
 		
 	// finally test against general string restrictions
@@ -111,32 +118,28 @@ bool MakeStringPrintable(char[] str, str_len_max, const char[] empty)
 	// the resulting string has zero-length or contains
 	// only spaces, replaces it with the empty-string.
 	
-	int r = 0, w = 0;
+	int r, w;
+	bool modified, nonspace, addspace;
 	
-	bool modified = false;
-	
-	bool nonspace = false;
-	bool addspace = false;
-	
-	if(str[0])
+	if (str[0])
 	{
 		do
 		{
-			if(str[r] < '\x20')
+			if (str[r] < '\x20')
 			{
 				modified = true;
 				
-				if((str[r] == '\n' || str[r] == '\t') && w > 0 && str[w - 1] != '\x20')
+				if ((str[r] == '\n' || str[r] == '\t') && w > 0 && str[w - 1] != '\x20')
 					addspace = true;
 			}
 			
 			else
 			{
-				if(str[r] != '\x20')
+				if (str[r] != '\x20')
 				{
 					nonspace = true;
 					
-					if(addspace)
+					if (addspace)
 						str[w++] = '\x20';
 				}
 				
@@ -145,13 +148,13 @@ bool MakeStringPrintable(char[] str, str_len_max, const char[] empty)
 			}
 		}
 		
-		while(str[++r])
+		while (str[++r])
 		{
 			str[w] = '\0';
 		}
 	}
 	
-	if(!nonspace)
+	if (!nonspace)
 	{
 		modified = true;
 		strcopy(str, str_len_max, empty);
@@ -162,10 +165,10 @@ bool MakeStringPrintable(char[] str, str_len_max, const char[] empty)
 
 bool TruncateString(char[] str, str_len, truncate_to)
 {
-	if(str_len <= truncate_to)
+	if (str_len <= truncate_to)
 		return false;
 		
-	if(truncate_to < 3)
+	if (truncate_to < 3)
 		truncate_to = 3;
 		
 	str[truncate_to - 3] = '.';
@@ -174,4 +177,4 @@ bool TruncateString(char[] str, str_len, truncate_to)
 	str[truncate_to] = '\0';
 	
 	return true;
-}
+} 

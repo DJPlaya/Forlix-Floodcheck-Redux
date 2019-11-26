@@ -52,4 +52,4 @@ public Action Event_PlayerDisconnect(Handle event, const char[] Event_type, bool
 	SetEventString(event, "reason", reason);
 	
 	return Plugin_Continue;
-}
+} 

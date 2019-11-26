@@ -17,27 +17,27 @@ void FloodCheckChat_Connect(iClient)
 
 public Action FloodCheckChat(iClient, args)
 {
-	if(!iClient)
+	if (!iClient)
 		return Plugin_Continue;
 		
-	if(!IsClientInGame(iClient))
+	if (!IsClientInGame(iClient))
 		return Plugin_Handled;
 		
 	bool bExcl;
 	
-	if(IsChatTrigger())
+	if (IsChatTrigger())
 		bExcl = g_bExcludeChatTriggers;
 		
 	else
 		FloodCheckHard(iClient);
 		
-	if(FloodDeadtime(iClient, game_chat_deadtime))
+	if (FloodDeadtime(iClient, game_chat_deadtime))
 		return Plugin_Handled;
 		
-	if(!bExcl && FloodCheck(iClient))
+	if (!bExcl && FloodCheck(iClient))
 		return Plugin_Handled;
 		
-	if(FilterChat(iClient))
+	if (FilterChat(iClient))
 		return Plugin_Handled;
 		
 	return Plugin_Continue;
@@ -45,16 +45,16 @@ public Action FloodCheckChat(iClient, args)
 
 public Action FloodCheckRadio(iClient, args)
 {
-	if(!iClient)
+	if (!iClient)
 		return Plugin_Continue;
 		
-	if(!IsClientInGame(iClient) || GetClientListeningFlags(iClient) & VOICE_MUTED)
+	if (!IsClientInGame(iClient) || GetClientListeningFlags(iClient) & VOICE_MUTED)
 		return Plugin_Handled;
 		
-	if(FloodDeadtime(iClient, game_radio_deadtime))
+	if (FloodDeadtime(iClient, game_radio_deadtime))
 		return Plugin_Handled;
 		
-	if(IsPlayerAlive(iClient) && FloodCheck(iClient))
+	if (IsPlayerAlive(iClient) && FloodCheck(iClient))
 		return Plugin_Handled;
 		
 	return Plugin_Continue;
@@ -76,21 +76,19 @@ bool FloodDeadtime(iClient, float deadtime)
 
 static bool FloodCheck(iClient)
 {
-	if(!iClient || !g_fChatInterval)
+	if (!iClient || !g_fChatInterval)
 		return false;
 		
 	float time_c = GetTickedTime();
 	
-	if(time_c < p_time_lastchatmsg[iClient] + g_fChatInterval) // iClient has undershot the chat msg interval
+	if (time_c < p_time_lastchatmsg[iClient] + g_fChatInterval) // iClient has undershot the chat msg interval
 	{
 		p_time_lastchatmsg[iClient] = time_c;
-		
-		if(p_cmdcnt_chat[iClient] < g_iChatNum) // add a flood token
+		if (p_cmdcnt_chat[iClient] < g_iChatNum) // add a flood token
 			p_cmdcnt_chat[iClient]++;
 			
-		// maximum tokens accumulated
-		// Client is now flooding
-		if(p_cmdcnt_chat[iClient] >= g_iChatNum)
+		// maximum tokens accumulated // Client is now flooding
+		if (p_cmdcnt_chat[iClient] >= g_iChatNum)
 		{
 			p_floodstate[iClient] = true;
 			return true;
@@ -101,10 +99,10 @@ static bool FloodCheck(iClient)
 	{
 		p_time_lastchatmsg[iClient] = time_c;
 		
-		if(p_cmdcnt_chat[iClient] > 0) // remove a flood token
+		if (p_cmdcnt_chat[iClient] > 0) // remove a flood token
 			p_cmdcnt_chat[iClient]--;
 			
-		if(p_cmdcnt_chat[iClient] < 0) // level out at zero
+		if (p_cmdcnt_chat[iClient] < 0) // level out at zero
 			p_cmdcnt_chat[iClient] = 0;
 	}
 	
@@ -120,7 +118,7 @@ static bool FilterChat(iClient)
 	GetCmdArgString(text, sizeof(text));
 	StripQuotes(text);
 	
-	if(MakeStringPrintable(text, sizeof(text), "")) // something had to be modified - not conform
+	if (MakeStringPrintable(text, sizeof(text), "")) // something had to be modified - not conform
 	{
 		PrintToChat(iClient, MALFORMED_MESSAGE_MSG);
 		return true;
@@ -227,4 +225,4 @@ SetupChatDetection_misc()
 public Native_IsClientFlooding(Handle plugin, numParams)
 {
 	return _:p_floodstate[GetNativeCell(1)];
-}
+} 

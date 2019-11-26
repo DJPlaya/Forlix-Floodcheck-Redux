@@ -49,17 +49,16 @@ static char addcheat_cmds[][] =
 
 void MarkCheats()
 {
-	for(int iCount = 0; iCount < sizeof(addcheat_cmds); iCount++)
+	for (int iCount = 0; iCount < sizeof(addcheat_cmds); iCount++)
 		SetCheatFlag(addcheat_cmds[iCount]);
 }
 
 static bool SetCheatFlag(const char[] cCvar)
 {
 	int iFlags = GetCommandFlags(cCvar);
-	
-	if(iFlags == INVALID_FCVAR_FLAGS)
+	if (iFlags == INVALID_FCVAR_FLAGS)
 		return false;
 		
 	SetCommandFlags(cCvar, iFlags | FCVAR_CHEAT);
 	return true;
-}
+} 

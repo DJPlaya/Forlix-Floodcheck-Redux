@@ -21,14 +21,14 @@ FloodCheckConnect_PluginEnd()
 	// remove all ip filters
 	int filternum = GetArraySize(h_ipfilters);
 	
-	for(int iCount; iCount < filternum; iCount++)
+	for (int iCount; iCount < filternum; iCount++)
 	{
 		char str_ip_exptime[MAX_IPPORT_LEN + 32];
 		GetArrayString(h_ipfilters, iCount, str_ip_exptime, sizeof(str_ip_exptime));
 		
 		int ip_len = FindCharInString(str_ip_exptime, '_');
 		
-		if(ip_len < IP_LEN_MIN)
+		if (ip_len < IP_LEN_MIN)
 			continue;
 			
 		str_ip_exptime[ip_len] = '\0';
@@ -46,12 +46,11 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 	static float connect_lasttime[CONNECT_TRACK];
 	static int connect_cnt[CONNECT_TRACK];
 	
-	if(!g_fConnectInterval)
+	if (!g_fConnectInterval)
 		return false;
 		
 	int ip_len = FindCharInString(str_ipport, ':');
-	
-	if(ip_len < IP_LEN_MIN)
+	if (ip_len < IP_LEN_MIN)
 		return false;
 		
 	char str_ip[MAX_IPPORT_LEN];
@@ -60,8 +59,8 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 	float time_c = GetTickedTime();
 	int ti = -1;
 	
-	for(int iCount; iCount < CONNECT_TRACK; iCount++)
-		if(!strcmp(connect_ip[iCount], str_ip))
+	for (int iCount; iCount < CONNECT_TRACK; iCount++)
+		if (!strcmp(connect_ip[iCount], str_ip))
 		{
 			ti = iCount;
 			break;
@@ -69,38 +68,35 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 		
 	// IP was not found in ring buffer
 	// or its tracking object has expired
-	if(ti < 0 || time_c >= connect_lasttime[ti] + g_fConnectInterval)
+	if (ti < 0 || time_c >= connect_lasttime[ti] + g_fConnectInterval)
 	{
-		// forget the old object if it exists
-		if(ti >= 0)
+		if (ti >= 0) // forget the old object if it exists
 			connect_ip[ti][0] = '\0';
 			
-		// get a fresh object at the beginning of the ring buffer,
-		// overwriting the oldest object in the buffer
-		ti = connect_ip_index;
+		ti = connect_ip_index; // get a fresh object at the beginning of the ring buffer, overwriting the oldest object in the buffer
 		
 		strcopy(connect_ip[ti], sizeof(connect_ip[]), str_ip);
 		connect_lasttime[ti] = time_c;
 		connect_cnt[ti] = 0;
 		
-		if(++connect_ip_index >= CONNECT_TRACK) // ring buffer - when end is reached, continue at the beginning
+		if (++connect_ip_index >= CONNECT_TRACK) // ring buffer - when end is reached, continue at the beginning
 			connect_ip_index = 0;
 	}
 	
-	if(++connect_cnt[ti] <= g_iConnectNum) // count towards the threshold
+	if (++connect_cnt[ti] <= g_iConnectNum) // count towards the threshold
 		return false;
 		
 	// ban this IP and clear it from the ring buffer
 	connect_ip[ti][0] = '\0';
 	
 	// add a tracking object to make sure the filter is removed upon expiration
-	if(!AddIPFilterTrackingObject(str_ip, g_iConnectBanTime)) // IP is already banned
+	if (!AddIPFilterTrackingObject(str_ip, g_iConnectBanTime)) // IP is already banned
 		return true;
 		
 	// format kick message
 	char kickmsg[MAX_MSG_LEN];
 	
-	if(g_iConnectBanTime <= 60)
+	if (g_iConnectBanTime <= 60)
 		Format(kickmsg, sizeof(kickmsg), FLOOD_CONNECT_MSG, "a minute");
 		
 	else
@@ -124,19 +120,17 @@ static bool AddIPFilterTrackingObject(const char[] str_ip, duration)
 {
 	int filternum = GetArraySize(h_ipfilters);
 	
-	for(int i = 0; i < filternum; i++)
+	for (int i = 0; i < filternum; i++)
 	{
 		char str_ip_exptime[MAX_IPPORT_LEN + 32];
 		GetArrayString(h_ipfilters, i, str_ip_exptime, sizeof(str_ip_exptime));
 		
 		int ip_len = FindCharInString(str_ip_exptime, '_');
-		
-		if(ip_len < IP_LEN_MIN)
+		if (ip_len < IP_LEN_MIN)
 			continue;
 			
 		str_ip_exptime[ip_len] = '\0';
-		
-		if(!strcmp(str_ip, str_ip_exptime)) // IP is already banned
+		if (!strcmp(str_ip, str_ip_exptime)) // IP is already banned
 			return false;
 	}
 	
@@ -153,21 +147,20 @@ public Action Timer_RemoveExpiredIPFilters(Handle timer)
 	int filternum = GetArraySize(h_ipfilters);
 	int iTime = GetTime();
 	
-	for(int iCount; iCount < filternum; iCount++)
+	for (int iCount; iCount < filternum; iCount++)
 	{
 		char str_ip_exptime[MAX_IPPORT_LEN + 32];
 		GetArrayString(h_ipfilters, iCount, str_ip_exptime, sizeof(str_ip_exptime));
 		
 		int iIPLenght = FindCharInString(str_ip_exptime, '_');
-		
-		if(iIPLenght < IP_LEN_MIN)
+		if (iIPLenght < IP_LEN_MIN)
 		{
 			RemoveFromArray(h_ipfilters, iCount--);
 			filternum--;
 			continue;
 		}
 		
-		if(iTime < StringToInt(str_ip_exptime[iIPLenght + 1]))
+		if (iTime < StringToInt(str_ip_exptime[iIPLenght + 1]))
 			continue;
 			
 		str_ip_exptime[iIPLenght] = '\0';
@@ -178,4 +171,4 @@ public Action Timer_RemoveExpiredIPFilters(Handle timer)
 	}
 	
 	return Plugin_Continue;
-}
+} 
