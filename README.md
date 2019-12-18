@@ -1,5 +1,9 @@
 # Forlix Floodcheck Redux
+This is a Fork of the latest Version of FFC, i will Update it to the latest Standards and improve Game Support.
+This may be merged with Cheat-Acid or KACR one Day, i cant tell yet.
 
+Project Status: Maintained, Rolling Release
+#
 Requires:
 - SourceMod 1.8 or Higher (forlix_floodcheck is for 1.10, forlix_floodcheck_legacy for 1.8/1.9)
 
@@ -16,9 +20,8 @@ Official supported Games:
 - Day of Defeat: Source
 #### Most Elements of FFCR will work on every Source 2007+ Engine Game
 #
-This is a Fork of the latest Version of FFC, i will Update it to the latest Standards and improve Game Support.
-</br>In general this Plugin is a great Protection against various Types of Flooding.
-</br>Types of Protection:
+In general this Plugin is a great Protection against various Types of Flooding.  
+Types of Protection:  
 - Chat
 - Commands
 - Namechange
