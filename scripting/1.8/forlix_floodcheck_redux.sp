@@ -96,7 +96,7 @@ public Plugin myinfo =
 	author = "Playa (Formerly Dominik Friedrichs)", 
 	description = "An Universal Anti Spam, Flood and Exploit Solution compactible with most Source Engine Games", 
 	version = PLUGIN_VERSION, 
-	url = "FunForBattle"
+	url = "github.com/DJPlaya/Forlix-Floodcheck-Redux"
 }
 
 
