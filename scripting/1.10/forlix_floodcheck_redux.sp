@@ -38,10 +38,27 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 // native bType SourceComms_GetClientGagType(int client); TODO
 // native bool SourceComms_SetClientGag(int client, bool gagState, int gagLength = -1, bool saveToDB = false, const char[] reason = "Gagged through natives"); TODO
 
+// SB-MaterialAdmin
+
+#define MA_BAN_STEAM 1
+#define MA_BAN_IP 2
+native bool MAOffBanPlayer(int iClient, int iType, char[] sSteamID, char[] sIp, char[] sName, int iTime, char[] sReason); // Local/Offline Ban
+native bool MABanPlayer(int iClient, int iTarget, int iType, int iTime, char[] sReason);
+//native bool MASetClientMuteType(int iClient, int iTarget, char[] sReason, int iType, int iTime = 0); TODO
+//native bool MAOffSetClientMuteType(int iClient, char[] sSteamID, char[] sIp, char[] sName, char[] sReason, int iType, int iTime = 0); TODO
+//native int MAGetClientMuteType(int iClient); TODO
+
+
+#define MA_LogAdmin 0
+#define MA_LogConfig 1
+#define MA_LogDateBase 2
+#define MA_LogAction 3
+native bool MALog(int iType, const char[] sLog, any ...); //TODO
+
 
 //- Defines -//
 
-#define PLUGIN_VERSION "0.1" // TODO: No versioning till the first stable Release
+#define PLUGIN_VERSION "0.1" // No versioning right now, we are on a rolling Release Cycle
 
 #define VOICE_LOOPBACK_MSG "Voice loopback not allowed!\nYou have been muted."
 
@@ -70,24 +87,47 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 
 //- Global Variables -//
 
-bool g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms;
+static bool g_bLateLoad;
+bool g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms, g_bSBMaterialAdmin;
 
 //- ConVars -//
+Handle g_hCVar_ExcludeChatTriggers, g_hCVar_MuteVoiceLoopback;
+Handle g_hCVar_ChatInterval, g_hCVar_ChatNum;
+Handle g_hCVar_HardInterval, g_hCVar_HardNum, g_hCVar_HardBanTime;
+Handle g_hCVar_NameInterval, g_hCVar_NameNum, g_hCVar_NameBanTime;
+Handle g_hCVar_ConnectInterval, g_hCVar_ConnectNum, g_hCVar_ConnectBanTime;
 
 //- Misc -//
 bool g_bExcludeChatTriggers, g_bMuteVoiceLoopback;
+
 //- Chat -//
 float g_fChatInterval;
 int g_iChatNum;
+
 //- Hard Flood -//
 float g_fHardInterval;
 int g_iHardNum, g_iHardBanTime;
+
 //- Namecheck -//
 float g_fNameInterval;
 int g_iNameNum, g_iNameBanTime;
+
 //- Connect Check -//
 float g_fConnectInterval;
 int g_iConnectNum, g_iConnectBanTime;
+
+
+//- FFCR Modules -// Note that the ordering of these Includes is important
+
+#include "FFCR/convars.sp" // ConVars
+#include "FFCR/markcheats.sp" // Mark dangerous CMDs as Cheats
+#include "FFCR/events.sp" // Events
+#include "FFCR/chatflood.sp" // Chat
+#include "FFCR/hardflood.sp" // Hard Flood
+#include "FFCR/nameflood.sp" // Namecheck
+#include "FFCR/connectflood.sp" // Connect Check
+#include "FFCR/voiceloopback.sp" // Voice Loopback
+#include "FFCR/stocks.sp" // Stocks
 
 
 public Plugin myinfo = 
@@ -99,35 +139,31 @@ public Plugin myinfo =
 	url = "github.com/DJPlaya/Forlix-Floodcheck-Redux"
 }
 
+//- Plugin, Native Config Functions -//
 
-//- FFCR Modules -// Note that the ordering of these Includes is important
-
-//- ConVars -//
-#include "FFCR/convars.sp"
-#include "FFCR/markcheats.sp"
-#include "FFCR/events.sp"
-//- Chat -//
-#include "FFCR/chatflood.sp"
-//- Hard Flood -//
-#include "FFCR/hardflood.sp"
-//- Namecheck -//
-#include "FFCR/nameflood.sp"
-//- Connect Check -//
-#include "FFCR/connectflood.sp"
-//- Voice Loopback -//
-#include "FFCR/voiceloopback.sp"
-#include "FFCR/toolfuncs.sp"
-
-
-//////////////////
-
-static bool late_load;
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, err_max)
+public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] error, err_max)
 {
+	//- SourceBans -//
+	MarkNativeAsOptional("SBPP_BanPlayer");
+	MarkNativeAsOptional("SBPP_ReportPlayer");
+	MarkNativeAsOptional("SBBanPlayer");
+	MarkNativeAsOptional("SB_ReportPlayer");
+	//- BaseComm -//
+	MarkNativeAsOptional("BaseComm_IsClientMuted");
+	MarkNativeAsOptional("BaseComm_SetClientMute");
+	//- SourceComms -//
+	MarkNativeAsOptional("SourceComms_GetClientMuteType");
+	MarkNativeAsOptional("SourceComms_SetClientMute");
+	//- SB Material Admin -//
+	MarkNativeAsOptional("MAOffBanPlayer");
+	MarkNativeAsOptional("MABanPlayer");
+	MarkNativeAsOptional("MALog");
+	//TODO: Mark other Natives, once they are added
+	
 	CreateNative("IsClientFlooding", Native_IsClientFlooding);
 	
-	late_load = late;
+	g_bLateLoad = bLate;
+	
 	return APLRes_Success;
 }
 
@@ -164,10 +200,10 @@ public void OnPluginStart()
 	
 	FloodCheckConnect_PluginStart();
 	
-	if (late_load)
+	if (g_bLateLoad)
 		Query_VoiceLoopback_All();
 		
-	late_load = false;
+	g_bLateLoad = false;
 }
 
 public void OnPluginEnd()
@@ -177,22 +213,35 @@ public void OnPluginEnd()
 
 public void OnAllPluginsLoaded()
 {
-	// Library Checks
+	//- Library Checks, SB -//
 	if (LibraryExists("sourcebans++")) // SB++
-		g_bSourceBans = true;
-		
-	else
-		g_bSourceBans = false;
-		
-	if (LibraryExists("sourcebans")) // SB
 		g_bSourceBansPP = true;
 		
 	else
 		g_bSourceBansPP = false;
 		
-	if (g_bSourceBansPP && g_bSourceBans)
-		LogError("[Warning] Sourcebans++ and Sourcebans 2.X are installed at the same Time! This can Result in Problems, FFC will only use SB++ for now");
+	if (LibraryExists("sourcebans")) // SB
+		g_bSourceBans = true;
 		
+	else
+		g_bSourceBans = false;
+		
+	if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = true;
+		
+	else
+		g_bSBMaterialAdmin = false;
+		
+	if (g_bSourceBansPP && g_bSourceBans)
+		LogError("[Warning] Sourcebans++ and Sourcebans 2.X are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	else if (g_bSourceBansPP && g_bSBMaterialAdmin)
+		LogError("[Warning] Sourcebans++ and SB Material Admin are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	else if (g_bSourceBans && g_bSBMaterialAdmin)
+		LogError("[Warning] Sourcebans and SB Material Admin are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	//- Library Checks, Comms -// We could check if SBMaterialAdmin is installed here cause it also has the Mute Natives implemented, but it should run fine along with SourceComms
 	if (LibraryExists("basecomm")) // BaseComm
 		g_bBaseComm = true;
 		
@@ -215,45 +264,42 @@ public void OnAllPluginsLoaded()
 		else
 			g_bSourceComms = false;
 	}
-	
 }
 
-//g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms;
-
 public void OnLibraryAdded(const char[] cName)
-{
-	if (strcmp(cName, "sourcebans", false))
-			g_bSourceBansPP = true;
-			
-	else if (strcmp(cName, "sourcebans++", false))
+{ // Ordered by Occurrence for Efficiency
+	if (strcmp(cName, "sourcebans++", false))
 			g_bSourceBans = true;
+			
+	else if (strcmp(cName, "sourcecomms++", false) || strcmp(cName, "sourcecomms", false))
+			g_bSourceComms = true;
+			
+	else if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = true;
 			
 	else if (strcmp(cName, "basecomm", false))
 			g_bBaseComm = true;
 			
-	else if (strcmp(cName, "sourcecomms", false))
-			g_bSourceComms = true;
-			
-	else if (strcmp(cName, "sourcecomms++", false))
-			g_bSourceComms = true;
+	else if (strcmp(cName, "sourcebans", false))
+			g_bSourceBansPP = true;
 }
 
 public void OnLibraryRemoved(const char[] cName)
-{
-	if (strcmp(cName, "sourcebans", false))
-			g_bSourceBansPP = false;
-			
-	else if (strcmp(cName, "sourcebans++", false))
+{ // Ordered by Occurrence for Efficiency
+	if (strcmp(cName, "sourcebans++", false))
 			g_bSourceBans = false;
+			
+	else if (strcmp(cName, "sourcecomms++", false) || strcmp(cName, "sourcecomms", false))
+			g_bSourceComms = false;
+			
+	else if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = false;
 			
 	else if (strcmp(cName, "basecomm", false))
 			g_bBaseComm = false;
 			
-	else if (strcmp(cName, "sourcecomms", false))
-			g_bSourceComms = false;
-			
-	else if (strcmp(cName, "sourcecomms++", false))
-			g_bSourceComms = false;
+	else if (strcmp(cName, "sourcebans", false))
+			g_bSourceBansPP = false;
 }
 
 public void OnConfigsExecuted()

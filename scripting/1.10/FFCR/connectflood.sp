@@ -8,7 +8,7 @@
 // 0.0.0.0:0 - shortest IP-port string
 // ^0     ^7
 
-static Handle h_ipfilters;
+static Handle h_ipfilters; // Local IP Filter
 
 void FloodCheckConnect_PluginStart()
 {
@@ -107,11 +107,11 @@ bool FloodCheckConnect(const char[] str_ipport, userid)
 	}
 	
 	// this will actually be executed after the kickid below
-	InsertServerCommand("addip %.3f %s", g_iConnectBanTime / 60.0, str_ip);
+	InsertServerCommand("addip %.3f %s", g_iConnectBanTime / 60.0, str_ip); // TODO, rework
 	
 	// avoid IP-banned clients stuck in connection attempt and timing out
 	// this is the only way of kicking a client that hasn't yet gotten a client index
-	InsertServerCommand("kickid %u %s", userid, kickmsg);
+	InsertServerCommand("kickid %u %s", userid, kickmsg); // TODO, rework
 	
 	return true;
 }

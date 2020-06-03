@@ -22,12 +22,6 @@
 #define FLOOD_CONNECT_NUM       "2"
 #define FLOOD_CONNECT_BAN_TIME  "50"
 
-static Handle g_hCVar_ExcludeChatTriggers, g_hCVar_MuteVoiceLoopback;
-static Handle g_hCVar_ChatInterval, g_hCVar_ChatNum;
-static Handle g_hCVar_HardInterval, g_hCVar_HardNum, g_hCVar_HardBanTime;
-static Handle g_hCVar_NameInterval, g_hCVar_NameNum, g_hCVar_NameBanTime;
-static Handle g_hCVar_ConnectInterval, g_hCVar_ConnectNum, g_hCVar_ConnectBanTime;
-
 
 //- ConVars -//
 

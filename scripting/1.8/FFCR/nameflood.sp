@@ -31,7 +31,7 @@ bool FloodCheckName(iClient)
 	
 	// reaching this, we should ban the Client
 	char str_networkid[MAX_STEAMID_LEN];
-	if (GetClientAuthId(iClient, AuthId_Steam2, str_networkid, sizeof(str_networkid))) // we've got the networkid // GetClientAuthString(iClient, str_networkid, sizeof(str_networkid))
+	if (GetClientAuthId(iClient, AuthId_Steam2, str_networkid, sizeof(str_networkid))) // we've got the networkid
 	{
 		char reason[MAX_MSG_LEN];
 		char ban_time[32];

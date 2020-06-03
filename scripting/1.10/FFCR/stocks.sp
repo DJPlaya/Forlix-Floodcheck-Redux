@@ -4,7 +4,7 @@
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
 /*
-* Performs and SB++-, SB- or Server-Ban
+* Performs and SB++-, SB-, Material Admin or Server-Ban
 * 
 * @param iClient	Client UID.
 * @param iTime		Bantime in Minutes, 0 = Forever.
@@ -14,35 +14,70 @@
 */
 bool FFCR_Ban(const iClient, iTime, const char[] cReason, any...)
 {
-	char cBuffer[256];
-	VFormat(cBuffer, sizeof(cBuffer), cReason, 5);
+	char cReason2[256];
+	VFormat(cReason2, sizeof(cReason2), cReason, 5);
 	
-	if (iTime < 4) // Do not send Bans under 5min to SB // TODO: Add Cvar
-		if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cBuffer, cBuffer, "FFCR"))
+	if (iTime < 5) // Do not send Bans under 5min to SB // TODO: Add Cvar
 	{
-		LogError("[Error] Failed to Server Ban Client '%L'", iClient);
-		return false;
+		if (g_bSBMaterialAdmin)
+		{
+			char cSteamID[16], cName[32], cIP[MAX_IPPORT_LEN];
+			GetClientAuthId(iClient, AuthId_Steam3, cSteamID, 16);
+			GetClientIP(iClient, cIP, MAX_IPPORT_LEN); // No Port
+			GetClientName(iClient, cName, 32);
+			if(!MAOffBanPlayer(iClient, MA_BAN_STEAM, cSteamID, cIP, cName, iTime, cReason2)) // We do not need the IP nor Name, still it is required for Material Admin
+			{
+				LogError("[Error] Failed to add an SB Material Admin Offline Ban for '%L'", iClient);
+				MALog(MA_LogAction, "[Error][FFCR] Failed to add an Offline Ban for '%L'", iClient);
+				if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cReason2, cReason2, "FFCR"))
+				{
+					LogError("[Error] Failed to Server Ban Client '%L' after an SB Material Admin Offline Ban also failed", iClient);
+					return false;
+				}
+			}
+		}
+		
+		else
+			if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cReason2, cReason2, "FFCR"))
+			{
+				LogError("[Error] Failed to Server Ban Client '%L'", iClient);
+				return false;
+			}
 	}
 	
 	if (g_bSourceBansPP)
 	{
-		SBPP_BanPlayer(0, iClient, iTime, cBuffer); // Admin 0 is the Server in SBPP, this ID CAN be created or edited manually in the Database to show Name "Server" on the Webpanel
+		SBPP_BanPlayer(0, iClient, iTime, cReason2); // Admin 0 is the Server in SBPP, this ID CAN be edited manually in the Database to show Name "Server" on the Webpanel
 		return true;
+	}
+	
+	else if (g_bSBMaterialAdmin)
+	{
+		if(!MABanPlayer(0, iClient, MA_BAN_STEAM, iTime, cReason2))
+		{
+			LogError("[Error] Failed to add an SB Material Admin Offline Ban for '%L'", iClient);
+			MALog(MA_LogAction, "[Error][FFCR] Failed to add an Offline Ban for '%L'", iClient);
+			if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cReason2, cReason2, "FFCR"))
+			{
+				LogError("[Error] Failed to Server Ban Client '%L' after an SB Material Admin Ban also failed", iClient);
+				return false;
+			}
+		}
 	}
 	
 	else if (g_bSourceBans)
 	{
-		SBBanPlayer(0, iClient, iTime, cBuffer);
+		SBBanPlayer(0, iClient, iTime, cReason2);
 		return true;
 	}
 	
 	else
-		if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cBuffer, cBuffer, "FFCR"))
-	{
-		LogError("[Error] Failed to Server Ban Client '%L'", iClient);
-		return false;
-	}
-	
+		if (!BanClient(iClient, iTime, BANFLAG_AUTHID, cReason2, cReason2, "FFCR"))
+		{
+			LogError("[Error] Failed to Server Ban Client '%L'", iClient);
+			return false;
+		}
+		
 	return false;
 }
 
