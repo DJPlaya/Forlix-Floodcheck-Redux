@@ -3,6 +3,12 @@
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
+
+//- Compiler Options -//
+
+#pragma newdecls optional
+
+
 //- Includes -//
 
 #include <sdktools>
