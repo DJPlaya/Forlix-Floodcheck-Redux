@@ -98,7 +98,7 @@ void FFCR_UnMute(int iClient, bool bAction)
 		GetClientAuthId(iClient, AuthId_Steam3, cSteamID, 16);
 		GetClientIP(iClient, cIP, MAX_IPPORT_LEN); // No Port
 		GetClientName(iClient, cName, 32);
-		if (!MAOffSetClientMuteType(iClient, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, 0))
+		if (!MAOffSetClientMuteType(0, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, 0))
 		{
 			LogError("[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted")
 			MALog(MA_LogAction, "[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");

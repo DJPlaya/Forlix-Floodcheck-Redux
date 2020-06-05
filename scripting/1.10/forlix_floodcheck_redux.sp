@@ -206,9 +206,9 @@ public Action FFCR_TEST(int iClient, char cArgs)
 	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
 	{
 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
-		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to muted...");
-		FFCR_UnMute(iTarget, true);
-		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
+		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
+		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
 	}
 }
 
