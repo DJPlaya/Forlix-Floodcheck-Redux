@@ -6,6 +6,7 @@
 //- Includes -//
 
 #include <sdktools>
+#include <materialadmin>
 
 
 //- Natives -//
@@ -38,23 +39,6 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 // native bType SourceComms_GetClientGagType(int client); TODO
 // native bool SourceComms_SetClientGag(int client, bool gagState, int gagLength = -1, bool saveToDB = false, const char[] reason = "Gagged through natives"); TODO
 
-// SB-MaterialAdmin
-
-#define MA_BAN_STEAM 1
-#define MA_BAN_IP 2
-native bool MAOffBanPlayer(int iClient, int iType, char[] sSteamID, char[] sIp, char[] sName, int iTime, char[] sReason); // Local/Offline Ban
-native bool MABanPlayer(int iClient, int iTarget, int iType, int iTime, char[] sReason);
-//native bool MASetClientMuteType(int iClient, int iTarget, char[] sReason, int iType, int iTime = 0); TODO
-//native bool MAOffSetClientMuteType(int iClient, char[] sSteamID, char[] sIp, char[] sName, char[] sReason, int iType, int iTime = 0); TODO
-//native int MAGetClientMuteType(int iClient); TODO
-
-
-#define MA_LogAdmin 0
-#define MA_LogConfig 1
-#define MA_LogDateBase 2
-#define MA_LogAction 3
-native bool MALog(int iType, const char[] sLog, any ...); //TODO
-
 
 //- Defines -//
 
@@ -70,6 +54,7 @@ native bool MALog(int iType, const char[] sLog, any ...); //TODO
 #define FLOOD_CONNECT_MSG "Too quick successive connection attempts, try again in %s"
 
 #define LOG_MSG_LOOPBACK_MUTE "[Forlix FloodCheck Redux] %L muted for voice loopback"
+#define MSG_LOOPBACK_MUTE "voice loopback" // Mute Reason for SourceComms/SB Material Admin
 
 #define NAME_STR_EMPTY "empty"
 #define REASON_STR_EMPTY "Empty reason"
@@ -157,6 +142,8 @@ public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] error, err_max)
 	//- SB Material Admin -//
 	MarkNativeAsOptional("MAOffBanPlayer");
 	MarkNativeAsOptional("MABanPlayer");
+	MarkNativeAsOptional("MAOffSetClientMuteType");
+	MarkNativeAsOptional("MAGetClientMuteType");
 	MarkNativeAsOptional("MALog");
 	//TODO: Mark other Natives, once they are added
 	
@@ -204,6 +191,19 @@ public void OnPluginStart()
 		Query_VoiceLoopback_All();
 		
 	g_bLateLoad = false;
+	
+	RegAdminCmd("ffcr_test", FFCR_TEST, ADMFLAG_ROOT, "test mute/unmute all clients");
+}
+
+public Action FFCR_TEST(int iClient, char cArgs)
+{
+	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
+	{
+		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to muted...");
+		FFCR_UnMute(iTarget, true);
+		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+	}
 }
 
 public void OnPluginEnd()

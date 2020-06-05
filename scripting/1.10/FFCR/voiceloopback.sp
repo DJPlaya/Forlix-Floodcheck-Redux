@@ -12,18 +12,6 @@ void Query_VoiceLoopback(iClient) // Client is ingame and not a bot
 	QueryClientConVar(iClient, "voice_loopback", Query_VoiceLoopback_Callback);
 }
 
-/*public Query_VoiceLoopback_Callback(QueryCookie cookie, iClient, ConVarQueryResult hResult, const char[] cvarName, const char[] cvarValue)
-{
-	if (StringToInt(cvarValue) && !(GetClientListeningFlags(iClient) & VOICE_MUTED)) // loopback on and client not already muted
-	{
-		SetClientListeningFlags(iClient, VOICE_MUTED);
-		PrintToChat(iClient, VOICE_LOOPBACK_MSG);
-		LogMessage(LOG_MSG_LOOPBACK_MUTE, iClient);
-	}
-	
-	return;
-}*/
-
 public void Query_VoiceLoopback_Callback(QueryCookie hCookie, int iClient, ConVarQueryResult hResult, const char[] cCVarName, const char[] cCVarValue)
 { // (Un)Mute the Client based on their current ConVar Value
 	if (hResult != ConVarQuery_Okay) // Query is not okay :C
@@ -49,48 +37,85 @@ public void Query_VoiceLoopback_Callback(QueryCookie hCookie, int iClient, ConVa
 }
 
 /*
-* Checks if an Client is muted by BaseComm or SourceComms.
+* Checks if an Client is muted by SourceComms, SB Material Admin or BaseComm.
 *
 * @param iClient	Client to Check for.
-* @return 		True if the Client is allready muted, false if not.
+* @return 			True if the Client is allready muted, false if not.
 */
 bool FFCR_IsClientMuted(int iClient)
 {
-	if (g_bBaseComm)
-		return BaseComm_IsClientMuted(iClient);
-		
-	else if (g_bSourceComms)
+	if (g_bSourceComms) // SourceComms
 		return (SourceComms_GetClientMuteType(iClient) != bNot);
 		
-	else
+	else if (g_bSBMaterialAdmin) // SB Material Admin // This needs to run before BaseComm, because there is an SB Material Admin Plugins which registers as BaseComm
+	{
+		if (MAGetClientMuteType(iClient) && MAGetClientMuteType(iClient) != 2) // 0 - None, 1 - Voice Chat, 2 - Text Chat, 3 - Voice + Text Chat
+			return true;
+			
+		else
+			return false;
+	}
+	
+	else if (g_bBaseComm) // BaseComm
+		return BaseComm_IsClientMuted(iClient);
+		
+	else // Nothing installed? Lets perform a regular Check
 		return !!(GetClientListeningFlags(iClient) & VOICE_MUTED);
 }
 
 /*
-* Mutes or Unmutes a specific Client, tries to use Basecomm or Sourcecomms before performing a simple Mute.
+* Mutes or Unmutes a specific Client, tries to use Basecomm, Sourcecomms or SB Material Admin before performing a simple Mute.
 *
 * @param iClient	Client to Mute.
 * @param bAction	True to Mute, False to Unmute.
 */
 void FFCR_UnMute(int iClient, bool bAction)
 {
-	if (g_bBaseComm)
-		BaseComm_SetClientMute(iClient, bAction);
-		
-	else if (g_bSourceComms)
+	if (g_bSourceComms) // SourceComms
 	{
 		if (bAction)
 		{
-			char muteReason[64];
-			Format(muteReason, sizeof(muteReason), "%t", "Mute Reason");
-			SourceComms_SetClientMute(iClient, bAction, -1, true, muteReason); //-1 session mute, saved to DB
+			//char muteReason[64]; TODO
+			//Format(muteReason, sizeof(muteReason), "%t", "Mute Reason"); TODO
+			if (!SourceComms_SetClientMute(iClient, bAction, -1, true, MSG_LOOPBACK_MUTE)) // -1 session mute, saved to DB
+			{
+				LogError("[Error] Failed to perform an SourceComms mute on '%L', he has been unmuted regularly instead", iClient);
+				SetClientListeningFlags(iClient, GetClientListeningFlags(iClient) | VOICE_MUTED);
+			}
 		}
 		
 		else
-			SourceComms_SetClientMute(iClient, bAction);
+			if (!SourceComms_SetClientMute(iClient, bAction))
+			{
+				LogError("[Error] Failed to perform an SourceComms unmute on '%L', he has been unmuted regularly instead", iClient);
+				SetClientListeningFlags(iClient, GetClientListeningFlags(iClient) & ~VOICE_MUTED);
+			}
 	}
 	
-	else
+	else if (g_bSBMaterialAdmin) // SB Material Admin // This needs to run before BaseComm, because there is an SB Material Admin Plugins which registers as BaseComm
+	{
+		char cSteamID[16], cName[32], cIP[MAX_IPPORT_LEN];
+		GetClientAuthId(iClient, AuthId_Steam3, cSteamID, 16);
+		GetClientIP(iClient, cIP, MAX_IPPORT_LEN); // No Port
+		GetClientName(iClient, cName, 32);
+		if (!MAOffSetClientMuteType(iClient, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, 0))
+		{
+			LogError("[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted")
+			MALog(MA_LogAction, "[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");
+			SetClientListeningFlags(iClient, GetClientListeningFlags(iClient) & ~VOICE_MUTED);
+		}
+	}
+	
+	else if (g_bBaseComm) // BaseComm
+	{
+		if (!BaseComm_SetClientMute(iClient, bAction))
+		{
+			LogError("[Error] Failed to perform an BaseComm %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");
+			SetClientListeningFlags(iClient, bAction ? (GetClientListeningFlags(iClient) | VOICE_MUTED) : (GetClientListeningFlags(iClient) & ~VOICE_MUTED));
+		}
+	}
+	
+	else // Nothing installed? Lets perform a regular Mute
 		SetClientListeningFlags(iClient, bAction ? (GetClientListeningFlags(iClient) | VOICE_MUTED) : (GetClientListeningFlags(iClient) & ~VOICE_MUTED));
 		
 	if (bAction)
