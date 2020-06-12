@@ -1,6 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
-* linguist-vendored
-*.inc linguist-vendored=false
 *.sp linguist-language=SourcePawn
 *.inc linguist-language=SourcePawn
+*.inc linguist-detectable=false
