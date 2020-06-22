@@ -8,6 +8,8 @@
 
 #pragma newdecls optional
 
+#define DEBUG // Debugging for nightly Builds TODO
+
 
 //- Includes -//
 
@@ -198,19 +200,27 @@ public void OnPluginStart()
 		
 	g_bLateLoad = false;
 	
-	RegAdminCmd("ffcr_test", FFCR_TEST, ADMFLAG_ROOT, "test mute/unmute all clients");
+	
+	
+	#if defined DEBUG
+	 LogMessage("[Warning] You are running an early Version of Forlix Floodcheck Redux, please be aware that it may not run stable");
+	 
+	 RegAdminCmd("ffcr_test", FFCR_TEST, ADMFLAG_ROOT, "test mute/unmute all clients");
+	#endif
 }
 
-public Action FFCR_TEST(int iClient, char cArgs)
-{
-	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
-	{
-		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
-		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
-		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
-		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
-	}
-}
+#if defined DEBUG
+ Action FFCR_TEST(const iClient, const iArgs)
+ {
+ 	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
+ 	{
+ 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
+ 		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
+ 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 	}
+ }
+#endif
 
 public void OnPluginEnd()
 {

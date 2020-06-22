@@ -15,7 +15,7 @@
 bool FFCR_Ban(const iClient, iTime, const char[] cReason, any...)
 {
 	char cReason2[256];
-	VFormat(cReason2, sizeof(cReason2), cReason, 5);
+	VFormat(cReason2, sizeof(cReason2), cReason, 4);
 	
 	if (iTime < 5) // Do not send Bans under 5min to SB // TODO: Add Cvar
 	{
