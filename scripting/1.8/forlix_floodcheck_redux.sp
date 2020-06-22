@@ -14,7 +14,9 @@
 //- Includes -//
 
 #include <sdktools>
+#undef REQUIRE_PLUGIN
 #include <materialadmin>
+#define REQUIRE_PLUGIN
 
 
 //- Natives -//
@@ -213,12 +215,13 @@ public void OnPluginStart()
  Action FFCR_TEST(const iClient, const iArgs)
  {
  	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
- 	{
- 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
- 		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
- 		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
- 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
- 	}
+ 		if (IsClientAuthorized(iTarget) && !IsFakeClient(iTarget))
+ 		{
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
+	 		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 		}
  }
 #endif
 
