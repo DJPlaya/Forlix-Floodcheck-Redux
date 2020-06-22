@@ -120,12 +120,12 @@ void FFCR_UnMute(int iClient, bool bAction)
 		
 	if (bAction)
 	{
-		PrintToChat(iClient, "%t", VOICE_LOOPBACK_MSG);
-		LogMessage(LOG_MSG_LOOPBACK_MUTE, iClient);
+		PrintToChat(iClient, VOICE_LOOPBACK_MSG);
+		LogMessage("[Info][FFCR] Client '%L' had a Voice Loopback running, he has been muted for this Session", iClient);
 	}
 	
 	//else
-	//	PrintToChat(iClient, "%t", ##); // TODO: Maybe later
+	//	PrintToChat(iClient, "%s" + VOICE_LOOPBACK_MSG, ##); // TODO: Maybe later
 }
 
 /*
