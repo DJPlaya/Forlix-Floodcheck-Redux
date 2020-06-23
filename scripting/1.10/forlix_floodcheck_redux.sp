@@ -3,9 +3,20 @@
 //
 // Copyright (c) 2008-2013 Dominik Friedrichs
 
+
+//- Compiler Options -//
+
+#pragma newdecls optional
+
+#define DEBUG // Debugging for nightly Builds TODO
+
+
 //- Includes -//
 
 #include <sdktools>
+#undef REQUIRE_PLUGIN
+#include <materialadmin>
+#define REQUIRE_PLUGIN
 
 
 //- Natives -//
@@ -41,7 +52,7 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 
 //- Defines -//
 
-#define PLUGIN_VERSION "0.1" // TODO: No versioning till the first stable Release
+#define PLUGIN_VERSION "0.1" // No versioning right now, we are on a rolling Release Cycle
 
 #define VOICE_LOOPBACK_MSG "Voice loopback not allowed!\nYou have been muted."
 
@@ -53,6 +64,7 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 #define FLOOD_CONNECT_MSG "Too quick successive connection attempts, try again in %s"
 
 #define LOG_MSG_LOOPBACK_MUTE "[Forlix FloodCheck Redux] %L muted for voice loopback"
+#define MSG_LOOPBACK_MUTE "voice loopback" // Mute Reason for SourceComms/SB Material Admin
 
 #define NAME_STR_EMPTY "empty"
 #define REASON_STR_EMPTY "Empty reason"
@@ -70,24 +82,47 @@ native bool SourceComms_SetClientMute(int client, bool muteState, int muteLength
 
 //- Global Variables -//
 
-bool g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms;
+static bool g_bLateLoad;
+bool g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms, g_bSBMaterialAdmin;
 
 //- ConVars -//
+Handle g_hCVar_ExcludeChatTriggers, g_hCVar_MuteVoiceLoopback;
+Handle g_hCVar_ChatInterval, g_hCVar_ChatNum;
+Handle g_hCVar_HardInterval, g_hCVar_HardNum, g_hCVar_HardBanTime;
+Handle g_hCVar_NameInterval, g_hCVar_NameNum, g_hCVar_NameBanTime;
+Handle g_hCVar_ConnectInterval, g_hCVar_ConnectNum, g_hCVar_ConnectBanTime;
 
 //- Misc -//
 bool g_bExcludeChatTriggers, g_bMuteVoiceLoopback;
+
 //- Chat -//
 float g_fChatInterval;
 int g_iChatNum;
+
 //- Hard Flood -//
 float g_fHardInterval;
 int g_iHardNum, g_iHardBanTime;
+
 //- Namecheck -//
 float g_fNameInterval;
 int g_iNameNum, g_iNameBanTime;
+
 //- Connect Check -//
 float g_fConnectInterval;
 int g_iConnectNum, g_iConnectBanTime;
+
+
+//- FFCR Modules -// Note that the ordering of these Includes is important
+
+#include "FFCR/convars.sp" // ConVars
+#include "FFCR/markcheats.sp" // Mark dangerous CMDs as Cheats
+#include "FFCR/events.sp" // Events
+#include "FFCR/chatflood.sp" // Chat
+#include "FFCR/hardflood.sp" // Hard Flood
+#include "FFCR/nameflood.sp" // Namecheck
+#include "FFCR/connectflood.sp" // Connect Check
+#include "FFCR/voiceloopback.sp" // Voice Loopback
+#include "FFCR/stocks.sp" // Stocks
 
 
 public Plugin myinfo = 
@@ -99,35 +134,33 @@ public Plugin myinfo =
 	url = "github.com/DJPlaya/Forlix-Floodcheck-Redux"
 }
 
+//- Plugin, Native Config Functions -//
 
-//- FFCR Modules -// Note that the ordering of these Includes is important
-
-//- ConVars -//
-#include "FFCR/convars.sp"
-#include "FFCR/markcheats.sp"
-#include "FFCR/events.sp"
-//- Chat -//
-#include "FFCR/chatflood.sp"
-//- Hard Flood -//
-#include "FFCR/hardflood.sp"
-//- Namecheck -//
-#include "FFCR/nameflood.sp"
-//- Connect Check -//
-#include "FFCR/connectflood.sp"
-//- Voice Loopback -//
-#include "FFCR/voiceloopback.sp"
-#include "FFCR/toolfuncs.sp"
-
-
-//////////////////
-
-static bool late_load;
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, err_max)
+public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] error, err_max)
 {
+	//- SourceBans -//
+	MarkNativeAsOptional("SBPP_BanPlayer");
+	MarkNativeAsOptional("SBPP_ReportPlayer");
+	MarkNativeAsOptional("SBBanPlayer");
+	MarkNativeAsOptional("SB_ReportPlayer");
+	//- BaseComm -//
+	MarkNativeAsOptional("BaseComm_IsClientMuted");
+	MarkNativeAsOptional("BaseComm_SetClientMute");
+	//- SourceComms -//
+	MarkNativeAsOptional("SourceComms_GetClientMuteType");
+	MarkNativeAsOptional("SourceComms_SetClientMute");
+	//- SB Material Admin -//
+	MarkNativeAsOptional("MAOffBanPlayer");
+	MarkNativeAsOptional("MABanPlayer");
+	MarkNativeAsOptional("MAOffSetClientMuteType");
+	MarkNativeAsOptional("MAGetClientMuteType");
+	MarkNativeAsOptional("MALog");
+	//TODO: Mark other Natives, once they are added
+	
 	CreateNative("IsClientFlooding", Native_IsClientFlooding);
 	
-	late_load = late;
+	g_bLateLoad = bLate;
+	
 	return APLRes_Success;
 }
 
@@ -164,11 +197,33 @@ public void OnPluginStart()
 	
 	FloodCheckConnect_PluginStart();
 	
-	if (late_load)
+	if (g_bLateLoad)
 		Query_VoiceLoopback_All();
 		
-	late_load = false;
+	g_bLateLoad = false;
+	
+	
+	
+	#if defined DEBUG
+	 LogMessage("[Warning] You are running an early Version of Forlix Floodcheck Redux, please be aware that it may not run stable");
+	 
+	 RegAdminCmd("ffcr_test", FFCR_TEST, ADMFLAG_ROOT, "test mute/unmute all clients");
+	#endif
 }
+
+#if defined DEBUG
+ Action FFCR_TEST(const iClient, const iArgs)
+ {
+ 	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
+ 		if (IsClientAuthorized(iTarget) && !IsFakeClient(iTarget))
+ 		{
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
+	 		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
+	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 		}
+ }
+#endif
 
 public void OnPluginEnd()
 {
@@ -177,22 +232,35 @@ public void OnPluginEnd()
 
 public void OnAllPluginsLoaded()
 {
-	// Library Checks
+	//- Library Checks, SB -//
 	if (LibraryExists("sourcebans++")) // SB++
-		g_bSourceBans = true;
-		
-	else
-		g_bSourceBans = false;
-		
-	if (LibraryExists("sourcebans")) // SB
 		g_bSourceBansPP = true;
 		
 	else
 		g_bSourceBansPP = false;
 		
-	if (g_bSourceBansPP && g_bSourceBans)
-		LogError("[Warning] Sourcebans++ and Sourcebans 2.X are installed at the same Time! This can Result in Problems, FFC will only use SB++ for now");
+	if (LibraryExists("sourcebans")) // SB
+		g_bSourceBans = true;
 		
+	else
+		g_bSourceBans = false;
+		
+	if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = true;
+		
+	else
+		g_bSBMaterialAdmin = false;
+		
+	if (g_bSourceBansPP && g_bSourceBans)
+		LogError("[Warning] Sourcebans++ and Sourcebans 2.X are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	else if (g_bSourceBansPP && g_bSBMaterialAdmin)
+		LogError("[Warning] Sourcebans++ and SB Material Admin are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	else if (g_bSourceBans && g_bSBMaterialAdmin)
+		LogError("[Warning] Sourcebans and SB Material Admin are installed at the same Time! This can Result in Problems, FFCR will use SB++ for now");
+		
+	//- Library Checks, Comms -// We could check if SBMaterialAdmin is installed here cause it also has the Mute Natives implemented, but it should run fine along with SourceComms
 	if (LibraryExists("basecomm")) // BaseComm
 		g_bBaseComm = true;
 		
@@ -215,45 +283,42 @@ public void OnAllPluginsLoaded()
 		else
 			g_bSourceComms = false;
 	}
-	
 }
 
-//g_bSourceBans, g_bSourceBansPP, g_bBaseComm, g_bSourceComms;
-
 public void OnLibraryAdded(const char[] cName)
-{
-	if (strcmp(cName, "sourcebans", false))
-			g_bSourceBansPP = true;
-			
-	else if (strcmp(cName, "sourcebans++", false))
+{ // Ordered by Occurrence for Efficiency
+	if (strcmp(cName, "sourcebans++", false))
 			g_bSourceBans = true;
+			
+	else if (strcmp(cName, "sourcecomms++", false) || strcmp(cName, "sourcecomms", false))
+			g_bSourceComms = true;
+			
+	else if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = true;
 			
 	else if (strcmp(cName, "basecomm", false))
 			g_bBaseComm = true;
 			
-	else if (strcmp(cName, "sourcecomms", false))
-			g_bSourceComms = true;
-			
-	else if (strcmp(cName, "sourcecomms++", false))
-			g_bSourceComms = true;
+	else if (strcmp(cName, "sourcebans", false))
+			g_bSourceBansPP = true;
 }
 
 public void OnLibraryRemoved(const char[] cName)
-{
-	if (strcmp(cName, "sourcebans", false))
-			g_bSourceBansPP = false;
-			
-	else if (strcmp(cName, "sourcebans++", false))
+{ // Ordered by Occurrence for Efficiency
+	if (strcmp(cName, "sourcebans++", false))
 			g_bSourceBans = false;
+			
+	else if (strcmp(cName, "sourcecomms++", false) || strcmp(cName, "sourcecomms", false))
+			g_bSourceComms = false;
+			
+	else if (LibraryExists("materialadmin")) // SB Material Admin
+		g_bSBMaterialAdmin = false;
 			
 	else if (strcmp(cName, "basecomm", false))
 			g_bBaseComm = false;
 			
-	else if (strcmp(cName, "sourcecomms", false))
-			g_bSourceComms = false;
-			
-	else if (strcmp(cName, "sourcecomms++", false))
-			g_bSourceComms = false;
+	else if (strcmp(cName, "sourcebans", false))
+			g_bSourceBansPP = false;
 }
 
 public void OnConfigsExecuted()
