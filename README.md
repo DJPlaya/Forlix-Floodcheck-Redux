@@ -10,15 +10,20 @@ Requires:
 Optional:
 - Sourcebans++
 - Sourcebans 2.X (V1 is unsupported)
-- BaseComm
 - SourceComms
 - SourceComms++
+- SB Material Admin
+- BaseComm
 
 Official supported Games:
-- Counter-Strike: Source
+- Counter-Strike: Global Offensive
 - Team Fortress 2
+- Counter-Strike: Source
+- Left 4 Dead 1/2
+- Insurgency
 - Day of Defeat: Source
-#### Most Elements of FFCR will work on every Source 2007+ Engine Game
+- Half-Life 2: Deathmatch
+#### FFCR should work on most Source 2007+ Engine Game
 #
 In general this Plugin is a great Protection against various Types of Flooding.  
 Types of Protection:  
