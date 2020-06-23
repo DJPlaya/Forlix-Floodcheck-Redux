@@ -25,15 +25,12 @@ public void Query_VoiceLoopback_Callback(QueryCookie hCookie, int iClient, ConVa
 		return;
 	}
 	
-	if (FFCR_IsClientMuted(iClient))
-	{
-		if (!view_as<bool>(StringToInt(cCVarValue))) // Disabled // If we wouldent convert this to an Bool, Hackers could send a Value out of Range(0-1)
+	if (StringToInt(cCVarValue) != 0)  // Activated // If we wouldent convert this to an Bool, Hackers could send a Value out of Range(0-1)
+		FFCR_UnMute(iClient, true); // Mute
+		
+	else // Disabled
+		if (FFCR_IsClientMuted(iClient))
 			FFCR_UnMute(iClient, false); // Unmute
-	}
-	
-	else
-		if (view_as<bool>(StringToInt(cCVarValue))) // Activated // If we wouldent convert this to an Bool, Hackers could send a Value out of Range(0-1)
-			FFCR_UnMute(iClient, true); // Mute
 }
 
 /*
@@ -64,7 +61,7 @@ bool FFCR_IsClientMuted(int iClient)
 }
 
 /*
-* Mutes or Unmutes a specific Client, tries to use Basecomm, Sourcecomms or SB Material Admin before performing a simple Mute.
+* Mutes or Unmutes a specific Client, tries to use Sourcecomms, SB Material Admin or Basecomm before performing a simple Mute.
 *
 * @param iClient	Client to Mute.
 * @param bAction	True to Mute, False to Unmute.
@@ -95,10 +92,17 @@ void FFCR_UnMute(int iClient, bool bAction)
 	else if (g_bSBMaterialAdmin) // SB Material Admin // This needs to run before BaseComm, because there is an SB Material Admin Plugins which registers as BaseComm
 	{
 		char cSteamID[16], cName[32], cIP[MAX_IPPORT_LEN];
+		int iTimeLeft;
 		GetClientAuthId(iClient, AuthId_Steam3, cSteamID, 16);
 		GetClientIP(iClient, cIP, MAX_IPPORT_LEN); // No Port
 		GetClientName(iClient, cName, 32);
-		if (!MAOffSetClientMuteType(0, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, 0))
+		if (!GetMapTimeLeft(iTimeLeft))
+			iTimeLeft = 60; // Operation not supported? Lets set the Mute Time to 60 Mins
+			
+		if (iTimeLeft <= 0)
+			iTimeLeft = 60; // Infinite Map Time? Lets set the Mute Time to 60 Mins
+			
+		if (!MAOffSetClientMuteType(0, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, iTimeLeft > 360 ? 60 : iTimeLeft)) // More than 6 Hours? The Map Creator probably done sh*t
 		{
 			LogError("[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted")
 			MALog(MA_LogAction, "[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");
@@ -121,7 +125,7 @@ void FFCR_UnMute(int iClient, bool bAction)
 	if (bAction)
 	{
 		PrintToChat(iClient, VOICE_LOOPBACK_MSG);
-		LogMessage("[Info][FFCR] Client '%L' had a Voice Loopback running, he has been muted for this Session", iClient);
+		LogMessage("[Info][FFCR] Client '%L' had a Voice Loopback running, he has been muted for now", iClient);
 	}
 	
 	//else
