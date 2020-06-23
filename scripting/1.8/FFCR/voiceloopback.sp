@@ -25,7 +25,7 @@ public void Query_VoiceLoopback_Callback(QueryCookie hCookie, int iClient, ConVa
 		return;
 	}
 	
-	if (StringToInt(cCVarValue) != 0)  // Activated // If we wouldent convert this to an Bool, Hackers could send a Value out of Range(0-1)
+	if (StringToInt(cCVarValue) != 0)  // Activated // Hackers could send a Value out of Range(0-1), thats why
 		FFCR_UnMute(iClient, true); // Mute
 		
 	else // Disabled

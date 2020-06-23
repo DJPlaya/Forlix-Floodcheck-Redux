@@ -8,7 +8,7 @@
 
 #pragma newdecls optional
 
-#define DEBUG // Debugging for nightly Builds TODO
+// #define DEBUG // Debugging for nightly Builds TODO
 
 
 //- Includes -//
