@@ -5,7 +5,7 @@ This may be merged with Cheat-Acid or KACR one Day, i cant tell yet.
 Project Status: Maintained, Rolling Release
 #
 Requires:
-- SourceMod 1.8 or Higher (forlix_floodcheck is for 1.10, forlix_floodcheck_legacy for 1.8/1.9)
+- SourceMod 1.8 or higher (forlix_floodcheck is for 1.10, forlix_floodcheck_legacy for 1.8/1.9)
 
 Optional:
 - Sourcebans++
