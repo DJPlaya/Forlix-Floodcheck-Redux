@@ -176,18 +176,23 @@ public void OnPluginStart()
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 	HookEvent("player_changename", Event_PlayerChangename, EventHookMode_Pre);
 	
-	// game-specific setup
-	char gamedir[16];
-	GetGameFolderName(gamedir, sizeof(gamedir));
+	//- Game-specific Setup -//
+	EngineVersion hGame = GetEngineVersion(); // Identify the game
 	
-	if (StrEqual(gamedir, "cstrike")) // counter-strike: source
+	if (hGame == Engine_TF2) // team fortress 2
+		SetupChatDetection_tf();
+		
+	else if (hGame == Engine_CSS) // counter-strike: source
 		SetupChatDetection_cstrike();
 		
-	else if (StrEqual(gamedir, "dod")) // day of defeat: source
+	else if (hGame == Engine_DODS) // day of defeat: source
 		SetupChatDetection_dod();
 		
-	else if (StrEqual(gamedir, "tf")) // team fortress 2
-		SetupChatDetection_tf();
+	else if (hGame == Engine_Insurgency) // Insuregency // TODO: More specific Checks required, the Game is untested!
+		RegConsoleCmd("say2", FloodCheckChat);
+		
+	else if (hGame == Engine_NuclearDawn) // NuclearDawn // TODO: More specific Checks required, the Game is untested!
+		RegConsoleCmd("say_squad", FloodCheckChat);
 		
 	else // all other games
 		SetupChatDetection_misc();
@@ -203,24 +208,23 @@ public void OnPluginStart()
 	g_bLateLoad = false;
 	
 	
-	
 	#if defined DEBUG
 	 LogMessage("[Warning] You are running an early Version of Forlix Floodcheck Redux, please be aware that it may not run stable");
 	 
-	 RegAdminCmd("ffcr_test", FFCR_TEST, ADMFLAG_ROOT, "test mute/unmute all clients");
+	 RegAdminCmd("ffcr_debug_mute", FFCR_debug_mute_cmd, ADMFLAG_ROOT, "Mute/Unmute all Clients with Debug MSGs");
 	#endif
 }
 
 #if defined DEBUG
- Action FFCR_TEST(const iClient, const iArgs)
+ Action FFCR_debug_mute_cmd(const iClient, const iArgs)
  {
  	for (int iTarget = 1; iTarget < MaxClients; iTarget++)
  		if (IsClientAuthorized(iTarget) && !IsFakeClient(iTarget))
  		{
-	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
-	 		ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
-	 		FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
-	 		ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 			ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
+ 			ReplyToCommand(iClient, "[Debug][FFCR] Setting Client to %s", FFCR_IsClientMuted(iTarget) ? "Unmuted" : "Muted");
+ 			FFCR_UnMute(iTarget, !FFCR_IsClientMuted(iTarget));
+ 			ReplyToCommand(iClient, "[Debug][FFCR] Client '%L' now is %s", iTarget, FFCR_IsClientMuted(iTarget) ? "Muted" : "Unmuted");
  		}
  }
 #endif
