@@ -22,6 +22,7 @@ Official supported Games:
 - Left 4 Dead 1/2
 - Insurgency
 - Day of Defeat: Source
+- Nuclear Dawn
 - Half-Life 2: Deathmatch
 #### FFCR should work on most Source 2007+ Engine Game
 #
