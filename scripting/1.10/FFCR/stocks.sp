@@ -25,7 +25,7 @@ bool FFCR_Ban(const iClient, iTime, const char[] cReason, any...)
 			GetClientAuthId(iClient, AuthId_Steam3, cSteamID, 16);
 			GetClientIP(iClient, cIP, MAX_IPPORT_LEN); // No Port
 			GetClientName(iClient, cName, 32);
-			if(!MAOffBanPlayer(iClient, MA_BAN_STEAM, cSteamID, cIP, cName, iTime, cReason2)) // We do not need the IP nor Name, still it is required for Material Admin
+			if(!MAOffBanPlayer(0, MA_BAN_STEAM, cSteamID, cIP, cName, iTime, cReason2))
 			{
 				LogError("[Error] Failed to add an SB Material Admin Offline Ban for '%L'", iClient);
 				MALog(MA_LogAction, "[Error][FFCR] Failed to add an Offline Ban for '%L'", iClient);
