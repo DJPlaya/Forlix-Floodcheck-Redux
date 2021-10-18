@@ -184,9 +184,8 @@ bool MakeStringPrintable(char[] str, str_len_max, const char[] empty)
 		}
 		
 		while (str[++r])
-		{
-			str[w] = '\0';
-		}
+		
+		str[w] = '\0';
 	}
 	
 	if (!nonspace)
