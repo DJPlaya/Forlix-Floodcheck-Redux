@@ -6,6 +6,7 @@
 
 //- Compiler Options -//
 
+#pragma semicolon true
 #pragma newdecls optional
 
 // #define DEBUG // Debugging for nightly Builds TODO

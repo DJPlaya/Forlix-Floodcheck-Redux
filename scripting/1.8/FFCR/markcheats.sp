@@ -45,7 +45,7 @@ static char addcheat_cmds[][] =
 	"sv_soundemitter_flush", 
 	"sv_soundscape_printdebuginfo", 
 	"wc_update_entity"
-}
+};
 
 void MarkCheats()
 {

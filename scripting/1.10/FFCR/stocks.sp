@@ -182,8 +182,7 @@ bool MakeStringPrintable(char[] str, str_len_max, const char[] empty)
 				str[w++] = str[r];
 			}
 		}
-		
-		while (str[++r])
+		while (str[++r]);
 		
 		str[w] = '\0';
 	}

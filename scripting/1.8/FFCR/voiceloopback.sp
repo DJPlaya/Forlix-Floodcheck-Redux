@@ -104,7 +104,7 @@ void FFCR_UnMute(int iClient, bool bAction)
 			
 		if (!MAOffSetClientMuteType(0, cSteamID, cIP, cName, MSG_LOOPBACK_MUTE, bAction ? MA_MUTE : MA_UNMUTE, iTimeLeft > 360 ? 60 : iTimeLeft)) // More than 6 Hours? The Map Creator probably done sh*t
 		{
-			LogError("[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted")
+			LogError("[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");
 			MALog(MA_LogAction, "[Error] Failed to perform an SB Material Admin %s on '%L', he has been %s regularly instead", bAction ? "mute" : "unmute", iClient, bAction ? "muted" : "unmuted");
 			SetClientListeningFlags(iClient, GetClientListeningFlags(iClient) & ~VOICE_MUTED);
 		}
